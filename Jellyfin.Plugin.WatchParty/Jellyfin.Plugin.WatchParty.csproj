@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Jellyfin.Plugin.WatchParty</AssemblyName>
     <RootNamespace>Jellyfin.Plugin.WatchParty</RootNamespace>
     <Nullable>enable</Nullable>
@@ -16,13 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="12.3.0">
+    <PackageReference Include="Jellyfin.Controller" Version="10.9.11">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Jellyfin.Model" Version="12.3.0">
+    <PackageReference Include="Jellyfin.Model" Version="10.9.11">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>
