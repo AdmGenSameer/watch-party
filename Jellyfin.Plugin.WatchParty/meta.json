@@ -7,5 +7,8 @@
   "category": "General",
   "version": "1.0.0.0",
   "targetAbi": "10.9.0.0",
-  "framework": "net8.0"
+  "status": "Active",
+  "assemblies": [
+    "Jellyfin.Plugin.WatchParty.dll"
+  ]
 }

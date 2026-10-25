@@ -3,7 +3,7 @@
     "guid": "d7e4b2f1-8c3a-4e91-b5d6-2f7a9c1e3b48",
     "name": "WatchParty",
     "description": "Netflix-style cinema UI and synchronized Watch Party with voice chat for Jellyfin.",
-    "overview": "Immersive Netflix-grade cinema frontend served directly at /tokoshan and real-time synchronized Watch Party with sub-100ms sync, live chat, floating reactions, and WebRTC voice chat.",
+    "overview": "Drop-in plugin providing an immersive Netflix-grade cinema frontend served directly at /tokoshan and real-time synchronized Watch Party with sub-100ms sync, live chat, floating reactions, and WebRTC voice chat.",
     "owner": "Tokoshan",
     "category": "General",
     "versions": [
@@ -12,7 +12,7 @@
         "changelog": "Initial release with Netflix UI, sub-100ms sync, live chat, floating reactions, and WebRTC voice chat.",
         "targetAbi": "10.9.0.0",
         "sourceUrl": "https://raw.githubusercontent.com/AdmGenSameer/watch-party/main/Jellyfin.Plugin.WatchParty_1.0.0.zip",
-        "checksum": "83d73d7f8bb150bdd651d734eb664be1",
+        "checksum": "fd0bf208ec885b6ac7769fe23cd83253",
         "timestamp": "2026-10-25T00:00:00Z"
       }
     ]
