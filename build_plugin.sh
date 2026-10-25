@@ -26,6 +26,7 @@ cp meta.json ./bin/publish/
 echo "[4/4] Packaging Plugin ZIP Archive..."
 cd ./bin/publish
 rm -f *.pdb *.xml
+rm -rf runtimes
 rm -f Emby.* Jellyfin.Database.* Jellyfin.Data.* Jellyfin.Extensions.* Jellyfin.MediaEncoding.*
 python3 -c "
 import zipfile, os, shutil
