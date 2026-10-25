@@ -1,0 +1,1379 @@
+/* =========================================================
+   WATCH PARTY — MARKET-READY DESIGN SYSTEM
+   Inspired by Linear, Plex, Figma. Clean, confident, human.
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap');
+
+:root {
+  /* Core backgrounds */
+  --wp-bg: #09090b;
+  --wp-surface: #111113;
+  --wp-surface-2: #18181b;
+  --wp-surface-3: #1f1f23;
+
+  /* Text */
+  --wp-text: #fafafa;
+  --wp-text-2: #a1a1aa;
+  --wp-text-3: #71717a;
+
+  /* Borders */
+  --wp-line: rgba(255,255,255,0.07);
+  --wp-line-hover: rgba(255,255,255,0.13);
+
+  /* Accent — muted red, not screaming */
+  --wp-red: #dc2626;
+  --wp-red-hover: #ef4444;
+  --wp-red-dim: rgba(220,38,38,0.12);
+
+  /* Status */
+  --wp-green: #16a34a;
+  --wp-green-glow: rgba(22,163,74,0.35);
+  --wp-amber: #d97706;
+
+  /* Typography */
+  --wp-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Motion */
+  --wp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --wp-fast: 120ms;
+  --wp-normal: 200ms;
+}
+
+/* =========================================================
+   RESET
+   ========================================================= */
+.watchparty-lobby-container *,
+.theater-container * {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   1. LOBBY PAGE
+   ========================================================= */
+
+.watchparty-lobby-container {
+  min-height: 100vh;
+  background: var(--wp-bg);
+  color: var(--wp-text);
+  font-family: var(--wp-font);
+  padding: 96px 40px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Hero */
+.lobby-hero {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lobby-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--wp-line);
+  background: var(--wp-surface);
+  margin-bottom: 22px;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wp-green);
+  box-shadow: 0 0 0 2px var(--wp-green-glow);
+  animation: pulse-ring 2.4s ease infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0px rgba(22,163,74,0.5); }
+  50%       { box-shadow: 0 0 0 4px rgba(22,163,74,0); }
+}
+
+.broadcast-signal-tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--wp-text-2);
+  letter-spacing: 0.3px;
+}
+
+.lobby-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--wp-text);
+  margin: 0 0 16px;
+}
+
+.lobby-title span {
+  color: var(--wp-text-3);
+  font-weight: 400;
+}
+
+.lobby-subtitle {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--wp-text-2);
+  margin: 0 0 32px;
+  max-width: 480px;
+}
+
+/* CTA Row */
+.lobby-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-primary-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 7px;
+  background: var(--wp-red);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: background var(--wp-fast) var(--wp-ease),
+              transform var(--wp-fast) var(--wp-ease);
+  letter-spacing: -0.01em;
+}
+
+.btn-primary-party:hover  { background: var(--wp-red-hover); }
+.btn-primary-party:active { transform: scale(0.97); }
+
+/* Join Code Row */
+.join-code-box {
+  display: flex;
+  align-items: center;
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-line);
+  border-radius: 7px;
+  padding: 0 0 0 12px;
+  gap: 0;
+  transition: border-color var(--wp-fast);
+}
+
+.join-code-box:focus-within {
+  border-color: var(--wp-line-hover);
+}
+
+.join-code-label { display: none; }
+
+.join-code-input {
+  background: transparent;
+  border: none;
+  color: var(--wp-text);
+  font-size: 0.875rem;
+  font-weight: 450;
+  outline: none;
+  width: 130px;
+  font-family: var(--wp-font);
+  padding: 8px 0;
+  letter-spacing: 1px;
+}
+
+.join-code-input::placeholder {
+  color: var(--wp-text-3);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.btn-join-code {
+  background: var(--wp-surface-2);
+  border: none;
+  border-left: 1px solid var(--wp-line);
+  color: var(--wp-text);
+  padding: 8px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.835rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: background var(--wp-fast);
+  height: 100%;
+}
+
+.btn-join-code:hover { background: var(--wp-surface-3); }
+
+/* =========================================================
+   2. SECTION HEADER
+   ========================================================= */
+
+.lobby-section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.835rem;
+  font-weight: 600;
+  color: var(--wp-text-2);
+  margin-bottom: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.lobby-live-counter {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--wp-text-3);
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-line);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* =========================================================
+   3. ROOM CARDS GRID
+   ========================================================= */
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.room-card {
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-line);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--wp-normal) var(--wp-ease),
+              box-shadow var(--wp-normal) var(--wp-ease);
+  cursor: default;
+}
+
+.room-card:hover {
+  border-color: var(--wp-line-hover);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.room-card-thumbnail {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--wp-surface-2);
+}
+
+.room-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.55));
+}
+
+.room-badge-status {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.7);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.room-badge-status .pulse-dot {
+  box-shadow: none;
+  animation: none;
+}
+
+.room-code-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.7);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--wp-text-2);
+  letter-spacing: 1px;
+}
+
+.room-card-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.room-card-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--wp-text);
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+
+.room-card-media {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--wp-text-3);
+}
+
+.room-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--wp-line);
+}
+
+.room-members-preview {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-stack-item {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--wp-surface);
+  margin-right: -5px;
+}
+
+.room-member-count {
+  font-size: 0.77rem;
+  color: var(--wp-text-3);
+  margin-left: 12px;
+}
+
+.btn-card-join {
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-2);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: all var(--wp-fast);
+  letter-spacing: -0.01em;
+}
+
+.btn-card-join:hover {
+  background: var(--wp-red);
+  border-color: var(--wp-red);
+  color: #fff;
+}
+
+/* Empty Rooms */
+.empty-rooms-banner {
+  text-align: center;
+  padding: 52px 24px;
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-rooms-banner h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--wp-text);
+  margin: 10px 0 6px;
+}
+
+.empty-rooms-banner p {
+  font-size: 0.85rem;
+  color: var(--wp-text-3);
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+/* =========================================================
+   4. CREATE PARTY MODAL
+   ========================================================= */
+
+.create-party-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.create-party-card {
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-line-hover);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 460px;
+  padding: 26px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  font-family: var(--wp-font);
+}
+
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.modal-header-row h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--wp-text);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--wp-text-3);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: color var(--wp-fast);
+}
+
+.modal-close-btn:hover { color: var(--wp-text); }
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--wp-text-3);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--wp-bg);
+  border: 1px solid var(--wp-line);
+  border-radius: 7px;
+  padding: 9px 13px;
+  color: var(--wp-text);
+  font-size: 0.88rem;
+  font-family: var(--wp-font);
+  outline: none;
+  transition: border-color var(--wp-fast);
+}
+
+.form-input::placeholder { color: var(--wp-text-3); }
+.form-input:focus { border-color: var(--wp-line-hover); }
+
+/* Media Picker */
+.media-picker-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.media-picker-item {
+  border: 1.5px solid var(--wp-line);
+  border-radius: 7px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--wp-bg);
+  transition: border-color var(--wp-fast);
+}
+
+.media-picker-item:hover        { border-color: var(--wp-line-hover); }
+.media-picker-item.selected     { border-color: var(--wp-red); }
+
+.media-picker-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.media-picker-title {
+  padding: 6px 8px;
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--wp-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  background: var(--wp-surface);
+}
+
+/* Permission Toggle */
+.permission-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 13px;
+  background: var(--wp-bg);
+  border: 1px solid var(--wp-line);
+  border-radius: 7px;
+  margin-bottom: 20px;
+}
+
+.permission-text {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--wp-text);
+}
+
+.permission-desc {
+  font-size: 0.75rem;
+  color: var(--wp-text-3);
+  margin-top: 2px;
+}
+
+/* =========================================================
+   5. THEATER CONTAINER
+   ========================================================= */
+
+.theater-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: var(--wp-text);
+  overflow: hidden;
+  position: relative;
+  font-family: var(--wp-font);
+}
+
+/* ---- Top Bar ---- */
+.theater-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 50px;
+  background: rgba(9,9,11,0.96);
+  border-bottom: 1px solid var(--wp-line);
+  flex-shrink: 0;
+  gap: 12px;
+  z-index: 30;
+}
+
+.theater-info-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Back / Exit */
+.btn-back-lobby {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-2);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color var(--wp-fast), border-color var(--wp-fast);
+}
+
+.btn-back-lobby:hover {
+  color: var(--wp-text);
+  border-color: var(--wp-line-hover);
+}
+
+/* Divider */
+.theater-top-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--wp-line);
+  flex-shrink: 0;
+}
+
+/* Title Block */
+.theater-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.theater-room-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--wp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.theater-movie-title {
+  font-size: 0.75rem;
+  color: var(--wp-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Watchers Pill */
+.theater-members-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.theater-member-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.theater-member-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid transparent;
+  transition: border-color var(--wp-fast);
+}
+
+.theater-member-avatar.synced    { border-color: var(--wp-green); }
+.theater-member-avatar.syncing   { border-color: var(--wp-amber); }
+.theater-member-avatar.buffering { border-color: #dc2626; }
+
+.theater-member-avatar.speaking {
+  border-color: var(--wp-green);
+  box-shadow: 0 0 0 2px rgba(22,163,74,0.4);
+}
+
+.host-crown-badge {
+  position: absolute;
+  top: -5px;
+  right: -4px;
+  background: var(--wp-amber);
+  color: #000;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-mic-muted-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  background: #27272a;
+  border: 1px solid rgba(220,38,38,0.5);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theater-watcher-count {
+  font-size: 0.75rem;
+  color: var(--wp-text-3);
+  margin-left: 2px;
+}
+
+/* Right Actions */
+.theater-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Generic icon button in top bar */
+.btn-topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-2);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  white-space: nowrap;
+  transition: color var(--wp-fast), border-color var(--wp-fast), background var(--wp-fast);
+  letter-spacing: -0.01em;
+}
+
+.btn-topbar:hover {
+  color: var(--wp-text);
+  border-color: var(--wp-line-hover);
+  background: var(--wp-surface);
+}
+
+.btn-topbar.active {
+  background: var(--wp-red);
+  border-color: var(--wp-red);
+  color: #fff;
+}
+
+.btn-topbar.voice-active {
+  color: var(--wp-green);
+  border-color: rgba(22,163,74,0.4);
+}
+
+.btn-topbar.muted-state {
+  color: var(--wp-text-3);
+}
+
+/* Keep old names for backward compat */
+.btn-copy-code,
+.btn-voice-control { }
+
+.btn-copy-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-3);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: color var(--wp-fast), border-color var(--wp-fast);
+}
+
+.btn-copy-code:hover {
+  color: var(--wp-text);
+  border-color: var(--wp-line-hover);
+}
+
+/* Voice Controls */
+.voice-controls-cluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-voice-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-2);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: all var(--wp-fast);
+}
+
+.btn-voice-control:hover {
+  color: var(--wp-text);
+  border-color: var(--wp-line-hover);
+  background: var(--wp-surface);
+}
+
+.btn-voice-control.muted {
+  color: var(--wp-text-3);
+}
+
+/* Chat Toggle */
+.btn-toggle-chat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-3);
+  cursor: pointer;
+  transition: all var(--wp-fast);
+  flex-shrink: 0;
+}
+
+.btn-toggle-chat:hover {
+  color: var(--wp-text);
+  border-color: var(--wp-line-hover);
+  background: var(--wp-surface);
+}
+
+.btn-toggle-chat.active {
+  background: var(--wp-red);
+  border-color: var(--wp-red);
+  color: #fff;
+}
+
+.chat-unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--wp-red);
+  color: #fff;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #000;
+}
+
+/* =========================================================
+   6. MAIN STAGE
+   ========================================================= */
+
+.theater-main-stage {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.theater-video-wrapper {
+  flex: 1;
+  display: flex;
+  background: #000;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  cursor: pointer;
+  display: block;
+}
+
+/* ---- Sync Status Pill (floating, non-intrusive) ---- */
+.player-sync-status-pill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--wp-text-2);
+  pointer-events: none;
+}
+
+.status-dot-synced   { width: 5px; height: 5px; border-radius: 50%; background: var(--wp-green); }
+.status-dot-syncing  { width: 5px; height: 5px; border-radius: 50%; background: var(--wp-amber); }
+.status-dot-buffering{ width: 5px; height: 5px; border-radius: 50%; background: #dc2626; }
+
+/* Host lock */
+.host-locked-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid rgba(217,119,6,0.25);
+  color: #fbbf24;
+  font-size: 0.72rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* =========================================================
+   7. PLAYER CONTROLS HUD
+   ========================================================= */
+
+.player-controls-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  padding: 36px 20px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 220ms ease;
+}
+
+/* Timeline */
+.player-timeline-slider {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255,255,255,0.2);
+  outline: none;
+  cursor: pointer;
+  transition: height 0.12s;
+}
+
+.player-timeline-slider:hover { height: 5px; }
+
+.player-timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(255,255,255,0.2);
+}
+
+.player-timeline-slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+}
+
+/* Controls Row */
+.player-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 5px;
+  transition: color var(--wp-fast), transform var(--wp-fast);
+}
+
+.control-btn:hover  { color: #fff; }
+.control-btn:active { transform: scale(0.92); }
+
+.control-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.time-display {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Volume Slider */
+input[type="range"].volume-slider {
+  -webkit-appearance: none;
+  width: 70px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.25);
+  outline: none;
+  cursor: pointer;
+  transition: height 0.12s;
+}
+
+input[type="range"].volume-slider:hover { height: 5px; }
+
+input[type="range"].volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* =========================================================
+   8. REACTIONS OVERLAY
+   ========================================================= */
+
+.reaction-overlay-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.floating-emoji-item {
+  position: absolute;
+  bottom: 80px;
+  pointer-events: none;
+  animation: float-up 2.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+@keyframes float-up {
+  0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+  10%  { opacity: 1; transform: translateY(-20px) scale(1.05); }
+  80%  { opacity: 0.85; transform: translateY(-220px) scale(1); }
+  100% { transform: translateY(-290px) scale(0.85); opacity: 0; }
+}
+
+/* Reaction Dock */
+.quick-reaction-dock {
+  position: absolute;
+  bottom: 72px;
+  right: 20px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(9,9,11,0.88);
+  border: 1px solid var(--wp-line);
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.quick-react-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 4px 5px;
+  border-radius: 5px;
+  transition: transform 0.12s var(--wp-ease), background 0.1s;
+  line-height: 1;
+}
+
+.quick-react-btn:hover {
+  transform: scale(1.3) translateY(-2px);
+  background: rgba(255,255,255,0.06);
+}
+
+/* =========================================================
+   9. CHAT SIDEBAR
+   ========================================================= */
+
+.chat-sidebar {
+  width: 310px;
+  height: 100%;
+  background: var(--wp-surface);
+  border-left: 1px solid var(--wp-line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-family: var(--wp-font);
+}
+
+.chat-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--wp-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.chat-header-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--wp-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Messages */
+.chat-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.chat-messages-container::-webkit-scrollbar {
+  width: 3px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+}
+
+/* System message */
+.system-message-row {
+  text-align: center;
+  margin: 2px 0;
+}
+
+.system-message-pill {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-3);
+  font-size: 0.69rem;
+  padding: 3px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+}
+
+/* User message */
+.user-message-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.user-message-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.user-message-content { flex: 1; min-width: 0; }
+
+.user-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 3px;
+}
+
+.message-author {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--wp-text);
+  letter-spacing: -0.01em;
+}
+
+.message-host-tag {
+  background: rgba(217,119,6,0.15);
+  color: #fbbf24;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+}
+
+.message-time {
+  font-size: 0.67rem;
+  color: var(--wp-text-3);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.message-bubble {
+  background: var(--wp-surface-2);
+  padding: 7px 10px;
+  border-radius: 0 7px 7px 7px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--wp-text);
+  word-break: break-word;
+}
+
+.user-message-row.is-me {
+  flex-direction: row-reverse;
+}
+
+.user-message-row.is-me .user-message-meta {
+  flex-direction: row-reverse;
+}
+
+.user-message-row.is-me .message-time {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.user-message-row.is-me .message-bubble {
+  background: rgba(220,38,38,0.14);
+  border-radius: 7px 0 7px 7px;
+  color: var(--wp-text);
+}
+
+/* Emoji strip */
+.emoji-quick-strip {
+  display: flex;
+  gap: 2px;
+  padding: 6px 14px;
+  background: var(--wp-surface-2);
+  border-top: 1px solid var(--wp-line);
+}
+
+.emoji-quick-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 4px;
+  transition: transform 0.1s;
+  line-height: 1;
+}
+
+.emoji-quick-btn:hover { transform: scale(1.2); }
+
+/* Input Bar */
+.chat-input-bar {
+  padding: 10px 12px;
+  border-top: 1px solid var(--wp-line);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--wp-surface);
+  flex-shrink: 0;
+}
+
+.chat-input-field {
+  flex: 1;
+  background: var(--wp-surface-2);
+  border: 1px solid var(--wp-line);
+  border-radius: 6px;
+  padding: 7px 11px;
+  color: var(--wp-text);
+  font-size: 0.84rem;
+  font-family: var(--wp-font);
+  outline: none;
+  transition: border-color var(--wp-fast);
+}
+
+.chat-input-field::placeholder { color: var(--wp-text-3); }
+.chat-input-field:focus { border-color: var(--wp-line-hover); }
+
+.btn-send-message {
+  background: var(--wp-red);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--wp-fast);
+}
+
+.btn-send-message:hover    { background: var(--wp-red-hover); }
+.btn-send-message:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* =========================================================
+   10. NAV BADGE & DETAIL BUTTON
+   ========================================================= */
+
+.nav-badge-live {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--wp-red);
+  color: #fff;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+
+.btn-detail-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 7px;
+  background: var(--wp-red);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  transition: background var(--wp-fast);
+  letter-spacing: -0.01em;
+}
+
+.btn-detail-party:hover { background: var(--wp-red-hover); }
+
+/* Room Ticket Badge */
+.room-ticket-badge {
+  font-size: 0.67rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--wp-surface-2);
+  border: 1px solid var(--wp-line);
+  color: var(--wp-text-3);
+  letter-spacing: 0.5px;
+}

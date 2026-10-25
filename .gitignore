@@ -1,0 +1,19 @@
+# .NET Build artifacts
+**/bin/
+**/obj/
+**/publish/
+*.pdb
+*.suo
+*.user
+
+# Frontend Node artifacts
+node_modules/
+**/node_modules/
+.vite/
+.DS_Store
+
+# OS / IDE
+.idea/
+.vscode/
+*.swp
+*~

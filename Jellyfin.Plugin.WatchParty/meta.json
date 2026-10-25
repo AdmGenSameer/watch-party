@@ -1,0 +1,11 @@
+{
+  "guid": "d7e4b2f1-8c3a-4e91-b5d6-2f7a9c1e3b48",
+  "name": "WatchParty",
+  "description": "Netflix-style cinema UI and synchronized Watch Party for Jellyfin.",
+  "overview": "Drop-in plugin providing an immersive Netflix-grade cinema frontend served at /tokoshan/ and synchronized real-time Watch Party with sub-100ms precision sync, live chat, and floating reactions.",
+  "owner": "Tokoshan",
+  "category": "General",
+  "version": "1.0.0.0",
+  "targetAbi": "10.9.0.0",
+  "framework": "net10.0"
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WatchParty &amp; Tokoshan Netflix UI</title>
+</head>
+<body>
+    <div id="watchPartyConfigPage" data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+                    <div style="background:linear-gradient(135deg, #e50914, #b20710); width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold; box-shadow:0 4px 14px rgba(229,9,20,0.4);">
+                        ▶
+                    </div>
+                    <div>
+                        <h1 style="margin:0; font-size:1.8rem; font-weight:700;">Tokoshan &amp; Watch Party</h1>
+                        <p style="margin:4px 0 0; color:#888;">Netflix-style Cinema UI &amp; Sub-100ms Synchronized Watch Parties</p>
+                    </div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.05); padding:16px 20px; border-radius:10px; margin-bottom:24px; border-left:4px solid #e50914;">
+                    <div style="font-weight:600; margin-bottom:6px;">🚀 Access Tokoshan Cinema UI:</div>
+                    <div>Navigate directly to <a id="tokoshanLink" href="/tokoshan/" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">/tokoshan/</a> in your browser to launch the cinema experience.</div>
+                </div>
+
+                <form class="watchPartyConfigForm">
+                    <div class="checkboxContainer" style="margin-bottom:16px;">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="enableWatchParty" />
+                            <span>Enable Real-time Watch Party Synchronization</span>
+                        </label>
+                    </div>
+
+                    <div class="checkboxContainer" style="margin-bottom:24px;">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="enableTokoshanUi" />
+                            <span>Enable Embedded Tokoshan Netflix-Style UI at /tokoshan/</span>
+                        </label>
+                    </div>
+
+                    <div class="inputContainer" style="margin-bottom:20px;">
+                        <label class="inputLabel" for="theaterName">Theater Display Name:</label>
+                        <input is="emby-input" type="text" id="theaterName" class="emby-input" />
+                    </div>
+
+                    <div class="inputContainer" style="margin-bottom:28px;">
+                        <label class="inputLabel" for="chatRetention">Chat History Retention (Days):</label>
+                        <input is="emby-input" type="number" id="chatRetention" min="1" max="365" class="emby-input" />
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block">
+                            <span>Save Settings</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var WatchPartyPluginConfig = {
+                pluginId: "d7e4b2f1-8c3a-4e91-b5d6-2f7a9c1e3b48"
+            };
+
+            document.querySelector('#watchPartyConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(WatchPartyPluginConfig.pluginId).then(function (config) {
+                        document.querySelector('#enableWatchParty').checked = config.EnableWatchParty !== false;
+                        document.querySelector('#enableTokoshanUi').checked = config.EnableTokoshanUi !== false;
+                        document.querySelector('#theaterName').value = config.TheaterName || 'Tokoshan Cinema';
+                        document.querySelector('#chatRetention').value = config.ChatHistoryRetentionDays || 30;
+                        
+                        var link = document.querySelector('#tokoshanLink');
+                        if (link) {
+                            link.href = window.location.origin + '/tokoshan/';
+                        }
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('.watchPartyConfigForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(WatchPartyPluginConfig.pluginId).then(function (config) {
+                        config.EnableWatchParty = document.querySelector('#enableWatchParty').checked;
+                        config.EnableTokoshanUi = document.querySelector('#enableTokoshanUi').checked;
+                        config.TheaterName = document.querySelector('#theaterName').value;
+                        config.ChatHistoryRetentionDays = parseInt(document.querySelector('#chatRetention').value, 10) || 30;
+
+                        ApiClient.updatePluginConfiguration(WatchPartyPluginConfig.pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>

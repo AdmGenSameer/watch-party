@@ -1,0 +1,54 @@
+.collection-grid-container {
+  margin: 64px auto;
+  max-width: 1600px;
+  padding: 0;
+  position: relative;
+}
+
+.collection-grid-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  opacity: 0.9;
+  padding-left: 8px;
+}
+
+.collection-track-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.collection-track {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 20px; /* space for scrollbar */
+  /* Hide scrollbar for a cleaner look but keep it scrollable */
+  scrollbar-width: none; 
+}
+
+.collection-track::-webkit-scrollbar {
+  display: none;
+}
+
+.collection-item-wrapper {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 380px; /* Make it nice and wide for 16:9 */
+}
+
+@media (max-width: 800px) {
+  .collection-item-wrapper {
+    width: 280px;
+  }
+}
+
+@media (max-width: 500px) {
+  .collection-item-wrapper {
+    width: 240px;
+  }
+}

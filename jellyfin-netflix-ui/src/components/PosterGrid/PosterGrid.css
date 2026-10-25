@@ -1,0 +1,39 @@
+.poster-grid-container {
+  margin: 64px auto;
+  max-width: 1600px;
+  padding: 0;
+}
+
+.poster-grid-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  opacity: 0.9;
+  padding-left: 8px;
+}
+
+.poster-grid {
+  display: grid;
+  /* Auto-fill gives us as many columns as will fit, with a min-width of 180px */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 800px) {
+  .poster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+  
+  .poster-grid-container {
+    margin: 40px auto;
+  }
+}
+
+@media (max-width: 500px) {
+  .poster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+}

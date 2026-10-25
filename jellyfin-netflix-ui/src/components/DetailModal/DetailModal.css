@@ -1,0 +1,525 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.spatial-modal {
+  position: relative;
+  width: 95%;
+  max-width: 1400px; /* slightly narrower for a focused cinematic view */
+  height: 95vh;
+  border-radius: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Scrollbar for Modal */
+.spatial-modal::-webkit-scrollbar {
+  width: 10px;
+}
+.spatial-modal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+.spatial-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  border: 2px solid rgba(10, 10, 10, 0.8);
+}
+.spatial-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(10, 10, 10, 0.4);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px);
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1) rotate(90deg);
+}
+
+/* Background Layer */
+.modal-backdrop-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70vh; /* Taller backdrop */
+  z-index: -2;
+}
+
+.modal-backdrop-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45; /* Darker to let text pop */
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+}
+
+.modal-vignette {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(10, 10, 10, 1) 0%, rgba(10, 10, 10, 0.8) 30%, rgba(10, 10, 10, 0) 100%);
+}
+
+/* Content Layout */
+.modal-main-content {
+  position: relative;
+  z-index: 1;
+  padding: 300px 64px 48px 64px; /* Push down to overlap backdrop */
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 64px;
+}
+
+/* Left Column - Poster */
+.modal-poster-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-poster-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255,255,255,0.05);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.modal-poster-wrapper:hover {
+  transform: scale(1.03);
+}
+
+.modal-main-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-poster-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(229, 9, 20, 0.8); /* Netflix Red */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.5);
+}
+
+.modal-poster-wrapper:hover .modal-poster-play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Right Column - Meta */
+.modal-meta-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-logo {
+  max-width: 300px;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-size: 4rem; /* Larger */
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+}
+
+.modal-quick-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 32px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.meta-rating {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px; /* Pill shape */
+  color: #fff;
+}
+
+/* Action Buttons */
+.modal-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.btn-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: rgba(255,255,255,0.15);
+  transform: scale(1.1);
+}
+
+/* Tech Dropdowns */
+.modal-tech-specs {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px 24px;
+  margin-bottom: 32px;
+  align-items: center;
+}
+
+.spec-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.glass-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+}
+
+.glass-select option {
+  background: #1a1a1a;
+  color: white;
+}
+
+/* Detailed Metadata */
+.modal-overview {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.modal-deep-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.meta-row-label {
+  color: var(--text-secondary);
+  width: 80px;
+  display: inline-block;
+}
+
+.meta-row-value {
+  color: var(--text-primary);
+}
+
+/* Horizontal Sections */
+.modal-horizontal-section {
+  padding: 0 48px 48px 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.scroll-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Cast Card */
+.cast-card {
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.cast-img-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.cast-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cast-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cast-role {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  .modal-main-content {
+    grid-template-columns: 1fr;
+    padding: 48px 24px 24px 24px;
+  }
+  
+  .modal-poster-col {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .modal-horizontal-section {
+    padding: 0 24px 48px 24px;
+  }
+}
+
+/* Episodes List (TV Series) */
+.episodes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+  padding-bottom: 32px;
+}
+
+.episode-card {
+  display: flex;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.episode-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(8px);
+}
+
+.episode-thumbnail-container {
+  position: relative;
+  width: 280px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.episode-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.episode-card:hover .episode-thumbnail {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.episode-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.episode-card:hover .episode-play-overlay {
+  opacity: 1;
+}
+
+.episode-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.episode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.episode-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.episode-meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.episode-overview {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Scene Card */
+.scene-card {
+  min-width: 280px;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+}
+
+.scene-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.scene-card:hover .scene-img {
+  transform: scale(1.08);
+}
+
+.scene-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  display: flex;
+  flex-direction: column;
+}
+
+.scene-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+}
+
+.scene-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  .episode-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .episode-thumbnail-container {
+    width: 100%;
+  }
+}

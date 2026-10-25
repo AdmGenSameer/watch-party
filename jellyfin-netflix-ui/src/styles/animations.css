@@ -1,0 +1,50 @@
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-up {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-slow) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up var(--transition-slow) forwards;
+}
+
+/* Skeleton Loading Shimmer */
+.skeleton {
+  background: #2a2a2a;
+  background-image: linear-gradient(
+    90deg, 
+    #2a2a2a 0px, 
+    #333333 40px, 
+    #2a2a2a 80px
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear forwards;
+}

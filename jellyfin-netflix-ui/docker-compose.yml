@@ -1,0 +1,11 @@
+services:
+  tokoshan-ui:
+    build: .
+    container_name: tokoshan-netflix-ui
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    # Optionally link or run alongside your existing Jellyfin container
+    # network_mode: bridge

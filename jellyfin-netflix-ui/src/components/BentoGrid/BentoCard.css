@@ -1,0 +1,168 @@
+.bento-card {
+  position: relative;
+  border-radius: var(--bento-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  will-change: transform, box-shadow;
+}
+
+.bento-card:hover {
+  transform: translateZ(20px) scale(1.03);
+  box-shadow: var(--glass-shadow-hover);
+  border-color: var(--glass-border-hover);
+  background: var(--glass-panel-hover);
+  z-index: 10;
+}
+
+/* Background image inside the card */
+.bento-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  transition: transform 0.8s ease;
+}
+
+.bento-card:hover .bento-bg {
+  transform: scale(1.05);
+}
+
+/* Vignette to ensure text readability */
+.bento-vignette {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.9) 0%, rgba(10, 10, 10, 0) 100%);
+  z-index: -1;
+}
+
+.bento-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.bento-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  align-items: center;
+}
+
+.bento-match {
+  color: #46D369; /* Netflix style match color, or we can use Gold */
+  font-weight: 600;
+}
+
+.bento-rating {
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* Spans */
+.span-1x1 {
+  grid-column: span 1;
+  grid-row: span 1;
+  min-height: 250px;
+}
+
+.span-1x2 {
+  grid-column: span 1;
+  grid-row: span 2;
+  min-height: 516px; /* 250*2 + 16 */
+}
+
+.span-2x1 {
+  grid-column: span 2;
+  grid-row: span 1;
+  min-height: 250px;
+}
+
+.span-2x2 {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 516px;
+}
+
+@media (max-width: 800px) {
+  .span-2x2 {
+    grid-column: span 2;
+    grid-row: span 1;
+    min-height: 300px;
+  }
+}
+@media (max-width: 500px) {
+  .span-1x2, .span-2x1, .span-2x2, .span-1x1 {
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: 200px;
+  }
+}
+
+/* Cinematic Hero Enhancements */
+.bento-hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.bento-hero-overview {
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 24px;
+  max-width: 80%;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.btn-primary {
+  background: var(--accent-gold);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: var(--pill-radius);
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+}
+
+.btn-primary:hover {
+  background: #f40612;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+}
+
+.btn-secondary {
+  color: white;
+  padding: 14px 40px;
+  border-radius: var(--pill-radius);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}

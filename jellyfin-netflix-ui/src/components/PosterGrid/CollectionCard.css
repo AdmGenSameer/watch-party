@@ -1,0 +1,87 @@
+.collection-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--bento-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  will-change: transform, box-shadow;
+}
+
+.collection-card:hover {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.8), var(--glass-shadow-hover);
+  border-color: rgba(255, 255, 255, 1);
+  z-index: 10;
+}
+
+.collection-backdrop-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.collection-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.collection-card:hover .collection-img {
+  transform: scale(1.05);
+}
+
+.collection-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+.collection-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transform: translateZ(30px); /* Pops content out in 3D */
+}
+
+.collection-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.collection-badge {
+  align-self: flex-start;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

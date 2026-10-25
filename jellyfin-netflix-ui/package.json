@@ -1,0 +1,39 @@
+{
+  "name": "tokoshan-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@jellyfin/sdk": "^0.13.0",
+    "@microsoft/signalr": "^10.0.11",
+    "framer-motion": "^13.1.1",
+    "hls.js": "^1.7.1",
+    "jellyfin-apiclient": "^1.11.0",
+    "lucide-react": "^1.33.0",
+    "peerjs": "^1.5.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.18.2",
+    "shaka-player": "^5.2.7",
+    "swiper": "^14.1.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "oxlint": "^1.75.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0"
+  }
+}

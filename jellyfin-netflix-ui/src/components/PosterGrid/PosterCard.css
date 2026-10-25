@@ -1,0 +1,95 @@
+.spatial-poster {
+  position: relative;
+  aspect-ratio: 2 / 3; /* Standard movie poster ratio */
+  border-radius: 16px; /* Slightly sharper than the giant bento cards */
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  will-change: transform, box-shadow;
+}
+
+.spatial-poster:hover {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.8), var(--glass-shadow-hover); /* Apple TV style thick border */
+  border-color: rgba(255, 255, 255, 1);
+  background: var(--glass-panel-hover);
+  z-index: 10;
+}
+
+.poster-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  transition: transform 0.6s ease;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.spatial-poster:hover .poster-img {
+  transform: scale(1.08);
+}
+
+.poster-vignette {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0) 100%);
+  z-index: -1;
+  opacity: 0.8;
+  transition: opacity 0.4s ease;
+}
+
+.spatial-poster:hover .poster-vignette {
+  opacity: 1;
+}
+
+.poster-info {
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+  transform: translateY(10px);
+  opacity: 0.8;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.spatial-poster:hover .poster-info {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.poster-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.poster-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  align-items: center;
+}
+
+.poster-rating {
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}

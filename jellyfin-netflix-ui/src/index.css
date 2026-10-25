@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Midnight Luxury Palette */
+  --bg-base: #050505;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --accent-gold: #E50914; /* Let's go with a Netflix-style vibrant red instead of gold for that cinematic pop */
+  --bg-secondary: #141414;
+  
+  /* Spatial Materials - Enhanced for ElegantFin feel */
+  --glass-panel: rgba(20, 20, 20, 0.4);
+  --glass-panel-hover: rgba(30, 30, 30, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.25);
+  
+  /* Subdued Spatial Shadow (Cinematic Depth) */
+  --glass-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 30px 60px rgba(0, 0, 0, 0.7);
+  --glass-shadow-hover: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 40px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255,255,255,0.05);
+  
+  /* Bento Metrics */
+  --bento-radius: 20px;
+  --pill-radius: 50px;
+  --bento-gap: 20px;
+  
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  overflow-x: hidden;
+  /* The "Environment" will be dynamically set by App.tsx, 
+     but we set a dark base just in case */
+}
+
+/* Spatial Typography */
+h1, h2, h3, h4, h5 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Utilities */
+.spatial-glass {
+  background: var(--glass-panel);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--bento-radius);
+}
+
+/* Custom Scrollbar for Bento */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
