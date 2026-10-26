@@ -7190,7 +7190,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "jellyfin-netflix-ui/src/components/WatchParty/ChatPanel.tsx",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -17935,5 +17935,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b809f81fbdf7dc2ba7aea7ab83e20450fea365bf"
+  "built_at_commit": "56442f22dd7f16b352592f4dd321c513da9211b9"
 }

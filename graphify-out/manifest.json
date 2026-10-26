@@ -204,10 +204,10 @@
     "semantic_hash": "b468a558b4ea0d1aa9ed463b14f6a60c"
   },
   "jellyfin-netflix-ui/src/components/WatchParty/ChatPanel.tsx": {
-    "mtime": 1792933464.856667,
-    "seen": 1793007435.2264652,
-    "ast_hash": "ae237c9213cc3e3ccc8b1e4bc3565033",
-    "semantic_hash": "ae237c9213cc3e3ccc8b1e4bc3565033"
+    "mtime": 1793010374.2063584,
+    "seen": 1793010463.408484,
+    "ast_hash": "e0c70fbd4392f0bf7ce15cf852b049c0",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/components/WatchParty/ReactionOverlay.tsx": {
     "mtime": 1792924767.7649271,
@@ -342,9 +342,9 @@
     "semantic_hash": "84ab0db037d910805dde270f3fc921b6"
   },
   "manifest.json": {
-    "mtime": 1793009151.390679,
-    "seen": 1793009165.7235336,
-    "ast_hash": "bab76a0215f9d238b6c079a3a3560f66",
+    "mtime": 1793010440.8279855,
+    "seen": 1793010463.4085205,
+    "ast_hash": "d1870ff568e6bf9785ee82016ce7ea68",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
