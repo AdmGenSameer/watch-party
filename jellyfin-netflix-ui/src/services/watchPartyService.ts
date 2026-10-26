@@ -36,6 +36,11 @@ class WatchPartyService {
   private serverUrl: string | null = null;
   private token: string | null = null;
 
+  private currentRoomId: string | null = null;
+  private currentRoomCode: string | null = null;
+  private wsConnection: WebSocket | null = null;
+  private wsReconnectTimer: any = null;
+
   // WebRTC P2P DataChannels
   private peer: Peer | null = null;
   private guestConnections: Map<string, DataConnection> = new Map();
@@ -88,6 +93,17 @@ class WatchPartyService {
 
         peer.on('open', (id) => {
           console.log('[WebRTC] Host Peer opened with ID:', id);
+          if (this.currentRoomId) {
+            this.broadcast({
+              roomId: this.currentRoomId,
+              roomCode: this.currentRoomCode || roomCode,
+              action: 'PEER_ANNOUNCE',
+              senderId: id,
+              senderName: 'Host',
+              peerId: id,
+              timestamp: Date.now()
+            });
+          }
           resolve(id);
         });
 
@@ -97,7 +113,7 @@ class WatchPartyService {
         });
 
         peer.on('error', (err) => {
-          console.warn('[WebRTC] Host Peer notice (falling back to channel/local sync if ID taken):', err.type);
+          console.warn('[WebRTC] Host Peer notice (falling back to server WebSocket sync):', err.type);
           resolve(hostPeerId);
         });
       } catch (e) {
@@ -111,13 +127,16 @@ class WatchPartyService {
     conn.on('open', () => {
       console.log('[WebRTC] Guest connection opened:', conn.peer);
       this.guestConnections.set(conn.peer, conn);
-      // Establish voice audio connection
-      voiceService.callPeer(conn.peer);
+      
+      // Register guest peer with voice service
+      voiceService.registerPeer(conn.peer);
+      if (voiceService.hasLocalStream()) {
+        voiceService.callPeer(conn.peer);
+      }
     });
 
     conn.on('data', (data) => {
       const payload = data as SyncPayload;
-      // Host notifies local listeners
       this.notifyListeners(payload);
 
       // Host relays to all other connected guests (star mesh topology)
@@ -158,15 +177,31 @@ class WatchPartyService {
         this.peer = peer;
         voiceService.init(peer);
 
-        peer.on('open', () => {
-          console.log('[WebRTC] Guest Peer opened, connecting to host:', targetHostPeerId);
+        peer.on('open', (myPeerId) => {
+          console.log('[WebRTC] Guest Peer opened:', myPeerId, 'connecting to host:', targetHostPeerId);
+          voiceService.registerPeer(targetHostPeerId);
+
           const conn = peer.connect(targetHostPeerId, { reliable: true });
           this.hostConnection = conn;
 
           conn.on('open', () => {
             console.log('[WebRTC] Successfully connected to Host DataChannel!');
-            // Establish voice audio call to host
-            voiceService.callPeer(targetHostPeerId);
+            voiceService.registerPeer(targetHostPeerId);
+            if (voiceService.hasLocalStream()) {
+              voiceService.callPeer(targetHostPeerId);
+            }
+
+            // Announce guest peer id to host and room
+            this.broadcast({
+              roomId: this.currentRoomId || `party_${roomCode}`,
+              roomCode,
+              action: 'PEER_ANNOUNCE',
+              senderId: myPeerId,
+              senderName: 'Guest',
+              peerId: myPeerId,
+              timestamp: Date.now()
+            });
+
             resolve(true);
           });
 
@@ -184,12 +219,12 @@ class WatchPartyService {
             resolve(false);
           });
 
-          // Timeout after 4 seconds to resolve true anyway (fallback channel handles same-machine/local)
-          setTimeout(() => resolve(true), 4000);
+          // Timeout after 3 seconds to resolve (WebSocket server sync is primary backup)
+          setTimeout(() => resolve(true), 3000);
         });
 
         peer.on('error', (err) => {
-          console.warn('[WebRTC] Guest peer error:', err);
+          console.warn('[WebRTC] Guest peer error (relying on WebSocket sync):', err);
           resolve(false);
         });
       } catch (e) {
@@ -223,18 +258,33 @@ class WatchPartyService {
   }
 
   // --- Native WebSocket Connection to Jellyfin WatchParty API ---
-  private wsConnection: WebSocket | null = null;
 
   public initServer(serverUrl: string | null, token: string | null) {
     this.serverUrl = serverUrl;
     this.token = token;
 
-    if (serverUrl) {
-      this.connectWebSocket(serverUrl);
+    if (this.serverUrl && this.currentRoomId) {
+      this.connectWebSocket(this.serverUrl, this.currentRoomId);
     }
   }
 
-  private connectWebSocket(serverUrl: string) {
+  public setRoom(roomId: string, roomCode?: string) {
+    this.currentRoomId = roomId;
+    if (roomCode) {
+      this.currentRoomCode = roomCode;
+    }
+
+    if (this.serverUrl) {
+      this.connectWebSocket(this.serverUrl, roomId);
+    }
+  }
+
+  private connectWebSocket(serverUrl: string, roomId: string) {
+    if (this.wsReconnectTimer) {
+      clearTimeout(this.wsReconnectTimer);
+      this.wsReconnectTimer = null;
+    }
+
     try {
       if (this.wsConnection) {
         try { this.wsConnection.close(); } catch { /* ignore */ }
@@ -244,8 +294,10 @@ class WatchPartyService {
       const isHttps = typeof window !== 'undefined' && (window.location.protocol === 'https:' || serverUrl.startsWith('https:'));
       const wsProtocol = isHttps ? 'wss:' : 'ws:';
       const host = serverUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      const tokenParam = this.token ? `?api_key=${encodeURIComponent(this.token)}` : '';
-      const wsUrl = `${wsProtocol}//${host}/api/watchparty/ws${tokenParam}`;
+      const tokenParam = this.token ? `api_key=${encodeURIComponent(this.token)}` : '';
+      const roomParam = `roomId=${encodeURIComponent(roomId)}`;
+      const query = [roomParam, tokenParam].filter(Boolean).join('&');
+      const wsUrl = `${wsProtocol}//${host}/api/watchparty/ws?${query}`;
 
       const ws = new WebSocket(wsUrl);
       this.wsConnection = ws;
@@ -255,28 +307,44 @@ class WatchPartyService {
           const payload = JSON.parse(event.data) as SyncPayload;
           this.notifyListeners(payload);
         } catch {
-          // ignore
+          // ignore parse errors
         }
       };
 
       ws.onopen = () => {
-        console.log('[WebSocket] Connected to Watch Party sync server at', wsUrl);
+        console.log('[WebSocket] Connected to Jellyfin Watch Party sync server for room:', roomId);
       };
 
-      ws.onerror = () => {
-        console.info('[WebSocket] Notice: Falling back to WebRTC P2P direct mesh');
+      ws.onclose = () => {
+        console.log('[WebSocket] Connection closed for room:', roomId);
+        // Schedule auto-reconnect if still in a room
+        if (this.currentRoomId && this.serverUrl) {
+          this.wsReconnectTimer = setTimeout(() => {
+            if (this.currentRoomId && this.serverUrl) {
+              this.connectWebSocket(this.serverUrl, this.currentRoomId);
+            }
+          }, 3000);
+        }
       };
-    } catch {
-      console.info('[WebSocket] Could not open WebSocket, using WebRTC P2P direct mesh');
+
+      ws.onerror = (err) => {
+        console.warn('[WebSocket] Sync server error:', err);
+      };
+    } catch (e) {
+      console.warn('[WebSocket] Could not open WebSocket:', e);
     }
   }
 
   // --- Unified Real-Time Broadcast ---
 
   public broadcast(payload: SyncPayload) {
+    // Attach roomCode if missing
+    if (!payload.roomCode && this.currentRoomCode) {
+      payload.roomCode = this.currentRoomCode;
+    }
+
     // 1. WebRTC DataChannels: Direct P2P transmission
     if (this.isPeerHost) {
-      // Host sends to all guests
       this.guestConnections.forEach((conn) => {
         if (conn.open) {
           try {
@@ -287,7 +355,6 @@ class WatchPartyService {
         }
       });
     } else if (this.hostConnection && this.hostConnection.open) {
-      // Guest sends to Host
       try {
         this.hostConnection.send(payload);
       } catch (e) {
@@ -313,12 +380,12 @@ class WatchPartyService {
       }
     }
 
-    // 4. Native WebSocket broadcast (if open)
+    // 4. Native Jellyfin WebSocket broadcast (server relay)
     if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
       try {
         this.wsConnection.send(JSON.stringify(payload));
-      } catch {
-        // fail silently
+      } catch (e) {
+        console.warn('[WebSocket] Send error', e);
       }
     }
   }

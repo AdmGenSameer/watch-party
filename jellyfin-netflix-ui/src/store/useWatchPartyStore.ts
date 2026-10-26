@@ -116,14 +116,33 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
   let unsubscribeSync: (() => void) | null = null;
   const initialUser = getPersistentUser();
 
-  // Setup broadcast / SignalR listener
+  // Setup broadcast / WebSocket / SignalR listener
   const setupListener = () => {
     if (unsubscribeSync) unsubscribeSync();
 
     unsubscribeSync = watchPartyService.subscribe((payload: SyncPayload) => {
       const state = get();
-      if (!state.currentRoom || payload.roomId !== state.currentRoom.id) {
-        // Maybe an active rooms broadcast update
+      const currentRoom = state.currentRoom;
+
+      if (!currentRoom) {
+        if (payload.action === 'ROOM_UPDATE') {
+          set({ activeRooms: watchPartyService.getStoredRooms() });
+        }
+        return;
+      }
+
+      const normPayloadRoom = (payload.roomId || '').replace(/^party_|^room_/i, '').toUpperCase();
+      const normPayloadCode = (payload.roomCode || '').toUpperCase();
+      const normCurrentRoomId = currentRoom.id.replace(/^party_|^room_/i, '').toUpperCase();
+      const normCurrentRoomCode = (currentRoom.code || '').toUpperCase();
+
+      const isMatch =
+        payload.roomId === currentRoom.id ||
+        payload.roomId === currentRoom.code ||
+        (normPayloadRoom && (normPayloadRoom === normCurrentRoomId || normPayloadRoom === normCurrentRoomCode)) ||
+        (normPayloadCode && (normPayloadCode === normCurrentRoomCode || normPayloadCode === normCurrentRoomId));
+
+      if (!isMatch) {
         if (payload.action === 'ROOM_UPDATE') {
           set({ activeRooms: watchPartyService.getStoredRooms() });
         }
@@ -139,21 +158,21 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
 
       switch (payload.action) {
         case 'PLAY': {
-          const room = { ...state.currentRoom, isPlaying: true, currentTime: payload.currentTime ?? state.currentRoom.currentTime, updatedAt: now };
+          const room: WatchPartyRoom = { ...currentRoom, isPlaying: true, currentTime: payload.currentTime ?? currentRoom.currentTime, updatedAt: now };
           set({ currentRoom: room, syncStatus: 'synced' });
           watchPartyService.saveRoom(room);
           break;
         }
 
         case 'PAUSE': {
-          const room = { ...state.currentRoom, isPlaying: false, currentTime: payload.currentTime ?? state.currentRoom.currentTime, updatedAt: now };
+          const room: WatchPartyRoom = { ...currentRoom, isPlaying: false, currentTime: payload.currentTime ?? currentRoom.currentTime, updatedAt: now };
           set({ currentRoom: room, syncStatus: 'synced' });
           watchPartyService.saveRoom(room);
           break;
         }
 
         case 'SEEK': {
-          const room = { ...state.currentRoom, currentTime: payload.currentTime ?? state.currentRoom.currentTime, updatedAt: now };
+          const room: WatchPartyRoom = { ...currentRoom, currentTime: payload.currentTime ?? currentRoom.currentTime, updatedAt: now };
           set({ currentRoom: room });
           watchPartyService.saveRoom(room);
           break;
@@ -167,12 +186,12 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
           if (payload.room) {
             set({ currentRoom: payload.room });
             watchPartyService.saveRoom(payload.room);
-          } else if (payload.senderId === state.currentRoom.hostId || (Boolean(state.currentRoom.hostName) && payload.senderName === state.currentRoom.hostName)) {
-            const hostTime = payload.currentTime ?? state.currentRoom.currentTime;
-            const updatedRoom = {
-              ...state.currentRoom,
+          } else if (payload.senderId === currentRoom.hostId || (Boolean(currentRoom.hostName) && payload.senderName === currentRoom.hostName)) {
+            const hostTime = payload.currentTime ?? currentRoom.currentTime;
+            const updatedRoom: WatchPartyRoom = {
+              ...currentRoom,
               currentTime: hostTime,
-              isPlaying: payload.isPlaying ?? state.currentRoom.isPlaying,
+              isPlaying: payload.isPlaying ?? currentRoom.isPlaying,
               updatedAt: now
             };
             set({ currentRoom: updatedRoom });
@@ -181,20 +200,20 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         }
 
         case 'JOIN': {
-          const existingMember = state.currentRoom.members.find(m => m.id === payload.senderId);
+          const existingMember = currentRoom.members.find(m => m.id === payload.senderId);
           if (!existingMember) {
             const newMember: WatchPartyMember = {
               id: payload.senderId,
               name: payload.senderName,
               avatar: payload.message?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&h=150&fit=crop',
-              isHost: payload.senderId === state.currentRoom.hostId,
+              isHost: payload.senderId === currentRoom.hostId,
               ping: 28,
               drift: 0,
               isBuffering: false,
               joinedAt: now
             };
-            const updatedMembers = [...state.currentRoom.members, newMember];
-            const updatedRoom = { ...state.currentRoom, members: updatedMembers };
+            const updatedMembers = [...currentRoom.members, newMember];
+            const updatedRoom: WatchPartyRoom = { ...currentRoom, members: updatedMembers };
             
             const joinMsg: ChatMessage = {
               id: 'sys_' + Math.random().toString(36).substring(2, 9),
@@ -216,12 +235,13 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
             // If we are host, respond with full state sync so new member gets up to date
             if (state.isHost) {
               watchPartyService.broadcast({
-                roomId: state.currentRoom.id,
+                roomId: currentRoom.id,
+                roomCode: currentRoom.code,
                 action: 'HEARTBEAT',
                 senderId: state.currentUser.id,
                 senderName: state.currentUser.name,
-                currentTime: state.currentRoom.currentTime,
-                isPlaying: state.currentRoom.isPlaying,
+                currentTime: currentRoom.currentTime,
+                isPlaying: currentRoom.isPlaying,
                 timestamp: now,
                 room: updatedRoom
               });
@@ -231,7 +251,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         }
 
         case 'LEAVE': {
-          const updatedMembers = state.currentRoom.members.filter(m => m.id !== payload.senderId);
+          const updatedMembers = currentRoom.members.filter(m => m.id !== payload.senderId);
           const leaveMsg: ChatMessage = {
             id: 'sys_' + Math.random().toString(36).substring(2, 9),
             userId: 'system',
@@ -241,7 +261,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
             type: 'system',
             timestamp: now
           };
-          const updatedRoom = { ...state.currentRoom, members: updatedMembers };
+          const updatedRoom: WatchPartyRoom = { ...currentRoom, members: updatedMembers };
           set({
             currentRoom: updatedRoom,
             messages: [...state.messages, leaveMsg]
@@ -252,26 +272,46 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
 
         case 'CHAT': {
           if (payload.message) {
-            set(s => ({
-              messages: [...s.messages, payload.message!],
-              unreadCount: s.isChatOpen ? 0 : s.unreadCount + 1
-            }));
+            set(s => {
+              if (s.messages.some(m => m.id === payload.message!.id)) {
+                return s;
+              }
+              return {
+                messages: [...s.messages, payload.message!],
+                unreadCount: s.isChatOpen ? 0 : s.unreadCount + 1
+              };
+            });
           }
           break;
         }
 
         case 'REACTION': {
           if (payload.reaction) {
-            set(s => ({
-              reactions: [...s.reactions.slice(-30), payload.reaction!]
-            }));
+            set(s => {
+              if (s.reactions.some(r => r.id === payload.reaction!.id)) {
+                return s;
+              }
+              return {
+                reactions: [...s.reactions.slice(-30), payload.reaction!]
+              };
+            });
+          }
+          break;
+        }
+
+        case 'PEER_ANNOUNCE': {
+          if (payload.peerId && payload.senderId !== state.currentUser.id) {
+            voiceService.registerPeer(payload.peerId);
+            if (voiceService.hasLocalStream()) {
+              voiceService.callPeer(payload.peerId);
+            }
           }
           break;
         }
 
         case 'PERMISSIONS': {
           if (payload.permissions) {
-            const updatedRoom = { ...state.currentRoom, permissions: payload.permissions };
+            const updatedRoom: WatchPartyRoom = { ...currentRoom, permissions: payload.permissions };
             set({ currentRoom: updatedRoom });
             watchPartyService.saveRoom(updatedRoom);
             toast('Host updated party permissions', { icon: '🛡️' });
@@ -280,22 +320,23 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         }
 
         case 'BUFFER': {
-          const members = state.currentRoom.members.map(m => 
+          const members = currentRoom.members.map(m => 
             m.id === payload.senderId ? { ...m, isBuffering: !!payload.isBuffering } : m
           );
-          set({ currentRoom: { ...state.currentRoom, members } });
+          set({ currentRoom: { ...currentRoom, members } });
           break;
         }
 
         case 'REQUEST_SYNC': {
           if (state.isHost) {
             watchPartyService.broadcast({
-              roomId: state.currentRoom.id,
+              roomId: currentRoom.id,
+              roomCode: currentRoom.code,
               action: 'HEARTBEAT',
               senderId: state.currentUser.id,
               senderName: state.currentUser.name,
-              currentTime: state.currentRoom.currentTime,
-              isPlaying: state.currentRoom.isPlaying,
+              currentTime: currentRoom.currentTime,
+              isPlaying: currentRoom.isPlaying,
               timestamp: now
             });
           }
@@ -387,7 +428,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       const code = generateRoomCode();
 
       const newRoom: WatchPartyRoom = {
-        id: 'room_' + Math.random().toString(36).substring(2, 9),
+        id: 'party_' + code,
         name: roomName || `${user.name}'s Party: ${media.title}`,
         code,
         hostId: user.id,
@@ -421,6 +462,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       };
 
       watchPartyService.saveRoom(newRoom);
+      watchPartyService.setRoom(newRoom.id, newRoom.code);
       watchPartyService.startHostPeer(newRoom.code);
 
       // Welcome system message
@@ -447,6 +489,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       // Broadcast room update so other tabs can see it in lobby
       watchPartyService.broadcast({
         roomId: newRoom.id,
+        roomCode: newRoom.code,
         action: 'ROOM_UPDATE',
         senderId: user.id,
         senderName: user.name,
@@ -466,11 +509,12 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         targetRoom = watchPartyService.findRoomById(roomIdOrCode);
       }
 
+      const cleanCode = roomIdOrCode.replace(/^party_|^room_/i, '').trim().toUpperCase();
+
       if (!targetRoom) {
         // Synthesize dynamic room for remote WebRTC P2P party join
-        const cleanCode = roomIdOrCode.trim().toUpperCase();
         targetRoom = {
-          id: 'room_' + cleanCode,
+          id: 'party_' + cleanCode,
           name: `Watch Party [${cleanCode}]`,
           code: cleanCode,
           hostId: 'remote_host',
@@ -492,6 +536,10 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
           },
           members: []
         };
+      } else {
+        if (!targetRoom.id.startsWith('party_')) {
+          targetRoom = { ...targetRoom, id: 'party_' + targetRoom.code };
+        }
       }
 
       const isHost = targetRoom.hostId === user.id || (Boolean(targetRoom.hostName) && targetRoom.hostName === user.name);
@@ -516,6 +564,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       };
 
       watchPartyService.saveRoom(updatedRoom);
+      watchPartyService.setRoom(updatedRoom.id, updatedRoom.code);
 
       const welcomeMsg: ChatMessage = {
         id: 'msg_welcome_' + now,
@@ -540,6 +589,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       // Announce join to peers
       watchPartyService.broadcast({
         roomId: updatedRoom.id,
+        roomCode: updatedRoom.code,
         action: 'JOIN',
         senderId: user.id,
         senderName: user.name,
@@ -558,6 +608,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       // Request latest sync position
       watchPartyService.broadcast({
         roomId: updatedRoom.id,
+        roomCode: updatedRoom.code,
         action: 'REQUEST_SYNC',
         senderId: user.id,
         senderName: user.name,
@@ -578,9 +629,11 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       if (!currentRoom) return;
 
       watchPartyService.closePeer();
+      watchPartyService.setRoom('', '');
 
       watchPartyService.broadcast({
         roomId: currentRoom.id,
+        roomCode: currentRoom.code,
         action: 'LEAVE',
         senderId: currentUser.id,
         senderName: currentUser.name,
@@ -857,7 +910,15 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
 
       try {
         await voiceService.startMicrophone(isMicMuted);
+        voiceService.resumeAudioContext();
         set({ isVoiceConnected: true });
+
+        // Register any members who have peerId
+        currentRoom.members.forEach(m => {
+          if (m.peerId && m.id !== currentUser.id) {
+            voiceService.registerPeer(m.peerId);
+          }
+        });
 
         voiceService.setOnSpeakingChange((isSpeaking) => {
           set({ isSpeaking });
@@ -865,6 +926,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
           if (room) {
             watchPartyService.broadcast({
               roomId: room.id,
+              roomCode: room.code,
               action: 'VOICE_STATE',
               senderId: currentUser.id,
               senderName: currentUser.name,
@@ -880,6 +942,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
 
         watchPartyService.broadcast({
           roomId: currentRoom.id,
+          roomCode: currentRoom.code,
           action: 'VOICE_STATE',
           senderId: currentUser.id,
           senderName: currentUser.name,

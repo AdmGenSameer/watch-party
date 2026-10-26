@@ -6,10 +6,10 @@
     "semantic_hash": "7959eb335199c7aedc5a06a0287db072"
   },
   "Jellyfin.Plugin.WatchParty/Controllers/WatchPartyController.cs": {
-    "mtime": 1792985084.741838,
-    "seen": 1793007435.2263923,
-    "ast_hash": "a11302879aef1f89bd17edc546c84b51",
-    "semantic_hash": "a11302879aef1f89bd17edc546c84b51"
+    "mtime": 1793008631.1626954,
+    "seen": 1793009165.7233744,
+    "ast_hash": "9df41a915bf641cbcd91792076b3eb1d",
+    "semantic_hash": ""
   },
   "Jellyfin.Plugin.WatchParty/Data/ChatMessageEntity.cs": {
     "mtime": 1791743490.6435475,
@@ -108,10 +108,10 @@
     "semantic_hash": "a75c7e8831e6c319ebd8ecd2b27349ce"
   },
   "Jellyfin.Plugin.WatchParty/Services/WatchPartyWebSocketService.cs": {
-    "mtime": 1792985054.3552916,
-    "seen": 1793007435.226431,
-    "ast_hash": "117003478eca097c6746b4fb76bdb19d",
-    "semantic_hash": "117003478eca097c6746b4fb76bdb19d"
+    "mtime": 1793008651.2874632,
+    "seen": 1793009165.723426,
+    "ast_hash": "d83b3c32b20ca13b9f06b43467bb9fb7",
+    "semantic_hash": ""
   },
   "Jellyfin.Plugin.WatchParty/manifest.json": {
     "mtime": 1792985261.7062109,
@@ -222,16 +222,16 @@
     "semantic_hash": "d7f3695f5b6baeed70d26334f0f037ff"
   },
   "jellyfin-netflix-ui/src/components/WatchParty/WatchPartyPlayer.tsx": {
-    "mtime": 1793003178.331175,
-    "seen": 1793007435.2264712,
-    "ast_hash": "ec6cd763c56c35584a0e0f4e97f527de",
-    "semantic_hash": "ec6cd763c56c35584a0e0f4e97f527de"
+    "mtime": 1793009015.973171,
+    "seen": 1793009165.723477,
+    "ast_hash": "d59fa636e118f5a09329a05f7ddd15bb",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/components/WatchParty/WatchPartyTheater.tsx": {
-    "mtime": 1793001412.6887565,
-    "seen": 1793007435.2264729,
-    "ast_hash": "4b4216aab0ad6c0b43b01326008afcc2",
-    "semantic_hash": "4b4216aab0ad6c0b43b01326008afcc2"
+    "mtime": 1793009071.0165155,
+    "seen": 1793009165.7234797,
+    "ast_hash": "ab28461060609b6afc114586f60ec5ed",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/data/mockData.ts": {
     "mtime": 1787488526.5966926,
@@ -282,16 +282,16 @@
     "semantic_hash": "31426cd5ee921c4f1dba088226938241"
   },
   "jellyfin-netflix-ui/src/services/voiceService.ts": {
-    "mtime": 1792927690.6151502,
-    "seen": 1793007435.2264922,
-    "ast_hash": "f221038a19f115aad154acf05c995978",
-    "semantic_hash": "f221038a19f115aad154acf05c995978"
+    "mtime": 1793008718.5666819,
+    "seen": 1793009165.7235043,
+    "ast_hash": "714e7b51a35649780a44754ac3df9762",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/services/watchPartyService.ts": {
-    "mtime": 1793003199.894954,
-    "seen": 1793007435.2264943,
-    "ast_hash": "0877f6be966470de2492fddc085008b1",
-    "semantic_hash": "0877f6be966470de2492fddc085008b1"
+    "mtime": 1793008766.775118,
+    "seen": 1793009165.7235072,
+    "ast_hash": "42673739b2bea2a168fb0ac0f8c2dfda",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/store/useAuthStore.ts": {
     "mtime": 1792910999.9530869,
@@ -306,16 +306,16 @@
     "semantic_hash": "87103541bd6086c3bab6434e4e355833"
   },
   "jellyfin-netflix-ui/src/store/useWatchPartyStore.ts": {
-    "mtime": 1793003131.2836657,
-    "seen": 1793007435.2264998,
-    "ast_hash": "8e79a8deb2ea4f805506e64ffb0c6b4d",
-    "semantic_hash": "8e79a8deb2ea4f805506e64ffb0c6b4d"
+    "mtime": 1793009120.3029275,
+    "seen": 1793009165.7235162,
+    "ast_hash": "603c398a6c5627efec04986818a1b4b9",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/src/types/watchParty.ts": {
-    "mtime": 1792992300.4338808,
-    "seen": 1793007435.2265017,
-    "ast_hash": "aadc680c45f253f7bcdbc146b701aeae",
-    "semantic_hash": "aadc680c45f253f7bcdbc146b701aeae"
+    "mtime": 1793008684.3240805,
+    "seen": 1793009165.723519,
+    "ast_hash": "8550ccfe182422ed9151903b86d56b58",
+    "semantic_hash": ""
   },
   "jellyfin-netflix-ui/tsconfig.app.json": {
     "mtime": 1787417937.8093615,
@@ -342,9 +342,87 @@
     "semantic_hash": "84ab0db037d910805dde270f3fc921b6"
   },
   "manifest.json": {
-    "mtime": 1793003272.1780326,
-    "seen": 1793007435.2265117,
-    "ast_hash": "a7ac67bbd4959a3936817bb6cbcb143e",
-    "semantic_hash": "a7ac67bbd4959a3936817bb6cbcb143e"
+    "mtime": 1793009151.390679,
+    "seen": 1793009165.7235336,
+    "ast_hash": "bab76a0215f9d238b6c079a3a3560f66",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1793007442.6124096,
+    "seen": 1793009165.7235367,
+    "ast_hash": "f1e53ecc9194573d3c28fc116c743a2e",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1793007442.6125395,
+    "seen": 1793009165.723539,
+    "ast_hash": "6d73634a678cf1e1c71930adf80bd1f0",
+    "semantic_hash": ""
+  },
+  "Jellyfin.Plugin.WatchParty/Configuration/cinema_frame.html": {
+    "mtime": 1792999437.3145864,
+    "seen": 1793009165.7235415,
+    "ast_hash": "db73d522160fc3a71fafe3448674d9c0",
+    "semantic_hash": ""
+  },
+  "Jellyfin.Plugin.WatchParty/Configuration/config.html": {
+    "mtime": 1792999488.7081687,
+    "seen": 1793009165.7235436,
+    "ast_hash": "0460d204f672de00739ccac41c35a93b",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1792984236.0979319,
+    "seen": 1793009165.7235458,
+    "ast_hash": "3a34ad3683de7c47a782cda578fefec9",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/README.md": {
+    "mtime": 1787417937.8075762,
+    "seen": 1793009165.723548,
+    "ast_hash": "10495bfcc6c568eca4dab6dd5df795d3",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/docker-compose.yml": {
+    "mtime": 1789728401.0760603,
+    "seen": 1793009165.7235503,
+    "ast_hash": "cb42b566b986271285633902d3e7481f",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/index.html": {
+    "mtime": 1792924510.3424459,
+    "seen": 1793009165.7235522,
+    "ast_hash": "972088ba2f98fd81f5e05dec4966b8e4",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/public/favicon.svg": {
+    "mtime": 1787417937.8082108,
+    "seen": 1793009165.7235544,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/public/icons.svg": {
+    "mtime": 1787417937.8083,
+    "seen": 1793009165.7235563,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/src/assets/hero.png": {
+    "mtime": 1787417937.8089252,
+    "seen": 1793009165.7235584,
+    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/src/assets/react.svg": {
+    "mtime": 1787417937.8090253,
+    "seen": 1793009165.7235603,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": ""
+  },
+  "jellyfin-netflix-ui/src/assets/vite.svg": {
+    "mtime": 1787417937.8091097,
+    "seen": 1793009165.7235622,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
   }
 }

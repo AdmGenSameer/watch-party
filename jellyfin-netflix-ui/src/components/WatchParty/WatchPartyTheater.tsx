@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Copy, Shield, ShieldAlert, MessageSquare, Crown, Mic, MicOff, Headphones, VolumeX, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWatchPartyStore } from '../../store/useWatchPartyStore';
+import { watchPartyService } from '../../services/watchPartyService';
 import WatchPartyPlayer from './WatchPartyPlayer';
 import ReactionOverlay from './ReactionOverlay';
 import ChatPanel from './ChatPanel';
@@ -40,6 +41,12 @@ export default function WatchPartyTheater() {
       });
     }
   }, [roomId, currentRoom, joinRoom, navigate]);
+
+  useEffect(() => {
+    if (currentRoom) {
+      watchPartyService.setRoom(currentRoom.id, currentRoom.code);
+    }
+  }, [currentRoom?.id, currentRoom?.code]);
 
   if (!currentRoom) {
     return (

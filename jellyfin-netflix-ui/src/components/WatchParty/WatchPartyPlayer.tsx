@@ -1,10 +1,29 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Lock, RotateCcw, RotateCw, AlertTriangle, RefreshCw, Languages, Subtitles, Check, X } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Lock, RotateCcw, RotateCw, AlertTriangle, RefreshCw, Languages, Subtitles, Check, X, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Hls from 'hls.js';
 import { useWatchPartyStore } from '../../store/useWatchPartyStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { getItemDetails } from '../../services/jellyfinApi';
+
+export type VideoQuality = 'auto' | '1080p' | '720p' | '480p' | '360p';
+
+interface QualityPreset {
+  id: VideoQuality;
+  label: string;
+  badge: string;
+  bitrate: number;
+  maxWidth?: number;
+  maxHeight?: number;
+}
+
+export const QUALITY_PRESETS: QualityPreset[] = [
+  { id: 'auto', label: 'Auto (Original)', badge: 'AUTO', bitrate: 12000000 },
+  { id: '1080p', label: '1080p (Full HD)', badge: '1080p', bitrate: 8000000, maxWidth: 1920, maxHeight: 1080 },
+  { id: '720p', label: '720p (HD)', badge: '720p', bitrate: 4000000, maxWidth: 1280, maxHeight: 720 },
+  { id: '480p', label: '480p (SD)', badge: '480p', bitrate: 1500000, maxWidth: 854, maxHeight: 480 },
+  { id: '360p', label: '360p (Data Saver)', badge: '360p', bitrate: 800000, maxWidth: 640, maxHeight: 360 },
+];
 
 const formatStreamTitle = (stream: any): string => {
   if (stream.DisplayTitle) {
@@ -66,8 +85,11 @@ export default function WatchPartyPlayer() {
   const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
   const [selectedSubtitleIndex, setSelectedSubtitleIndex] = useState<number | null>(-1);
   const [showTrackMenu, setShowTrackMenu] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('auto');
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
   const restoreTimeRef = useRef<{ time: number; isPlaying: boolean } | null>(null);
   const trackMenuRef = useRef<HTMLDivElement>(null);
+  const qualityMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     currentRoomRef.current = currentRoom;
@@ -110,12 +132,14 @@ export default function WatchPartyPlayer() {
     };
   }, [authServerUrl, authToken, playableId, isServerMedia, userId]);
 
-  // Compute playable stream URL: transcode via Jellyfin master.m3u8 with active AudioStreamIndex
+  // Compute playable stream URL: transcode via Jellyfin master.m3u8 with active AudioStreamIndex & VideoQuality
   const streamUrl = (() => {
     if (authServerUrl && authToken && isServerMedia) {
       const sessionId = currentRoom?.id ? `tokoshan_${currentRoom.id.replace(/[^a-zA-Z0-9]/g, '')}` : 'tokoshan_player';
       const audioParam = selectedAudioIndex !== null ? `&AudioStreamIndex=${selectedAudioIndex}` : '';
-      return `${authServerUrl}/Videos/${playableId}/master.m3u8?MediaSourceId=${playableId}&DeviceId=tokoshan-web&PlaySessionId=${sessionId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True${audioParam}&api_key=${authToken}`;
+      const preset = QUALITY_PRESETS.find(q => q.id === selectedQuality) || QUALITY_PRESETS[0];
+      const resParams = preset.maxWidth && preset.maxHeight ? `&MaxWidth=${preset.maxWidth}&MaxHeight=${preset.maxHeight}` : '';
+      return `${authServerUrl}/Videos/${playableId}/master.m3u8?MediaSourceId=${playableId}&DeviceId=tokoshan-web&PlaySessionId=${sessionId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=${preset.bitrate}${resParams}&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True${audioParam}&api_key=${authToken}`;
     }
     return currentRoom?.media.streamUrl || '';
   })();
@@ -155,15 +179,34 @@ export default function WatchPartyPlayer() {
       if (trackMenuRef.current && !trackMenuRef.current.contains(e.target as Node)) {
         setShowTrackMenu(false);
       }
+      if (qualityMenuRef.current && !qualityMenuRef.current.contains(e.target as Node)) {
+        setShowQualityMenu(false);
+      }
     };
 
-    if (showTrackMenu) {
+    if (showTrackMenu || showQualityMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTrackMenu]);
+  }, [showTrackMenu, showQualityMenu]);
+
+  const handleSelectQuality = (qualityId: VideoQuality) => {
+    if (qualityId === selectedQuality) return;
+
+    const video = videoRef.current;
+    const currentPos = video?.currentTime || 0;
+    const wasPlaying = video ? !video.paused : false;
+
+    // Save playback position before reloading stream with new resolution/bitrate
+    restoreTimeRef.current = { time: currentPos, isPlaying: wasPlaying };
+    setSelectedQuality(qualityId);
+    setShowQualityMenu(false);
+
+    const preset = QUALITY_PRESETS.find(q => q.id === qualityId);
+    toast.success(`Video Quality: ${preset?.label || qualityId}`, { icon: '⚙️' });
+  };
 
   const handleSelectAudio = (index: number) => {
     if (index === selectedAudioIndex) return;
@@ -704,6 +747,56 @@ export default function WatchPartyPlayer() {
                           })}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Video Quality Selector */}
+            {isServerMedia && (
+              <div className="track-selector-wrapper" ref={qualityMenuRef}>
+                <button
+                  type="button"
+                  className={`control-btn quality-badge-btn ${showQualityMenu ? 'active' : ''}`}
+                  onClick={() => setShowQualityMenu(prev => !prev)}
+                  title="Playback Quality"
+                >
+                  <Settings size={18} />
+                  <span className="quality-badge-text">
+                    {QUALITY_PRESETS.find(q => q.id === selectedQuality)?.badge || 'AUTO'}
+                  </span>
+                </button>
+
+                {showQualityMenu && (
+                  <div className="track-selector-popover quality-popover">
+                    <div className="track-popover-header">
+                      <h4>Playback Quality</h4>
+                      <button
+                        type="button"
+                        className="track-popover-close"
+                        onClick={() => setShowQualityMenu(false)}
+                        title="Close"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    <div className="track-list quality-list">
+                      {QUALITY_PRESETS.map((preset) => {
+                        const isSelected = selectedQuality === preset.id;
+                        return (
+                          <button
+                            type="button"
+                            key={preset.id}
+                            className={`track-item-btn ${isSelected ? 'selected' : ''}`}
+                            onClick={() => handleSelectQuality(preset.id)}
+                          >
+                            <span className="track-check">{isSelected ? <Check size={13} /> : null}</span>
+                            <span className="track-label">{preset.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

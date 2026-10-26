@@ -2,9 +2,11 @@ import type { Peer } from 'peerjs';
 
 class VoiceService {
   private localStream: MediaStream | null = null;
+  private silentStream: MediaStream | null = null;
   private currentPeer: Peer | null = null;
   private mediaCalls: Map<string, any> = new Map();
   private remoteAudioElements: Map<string, HTMLAudioElement> = new Map();
+  private knownPeerIds: Set<string> = new Set();
   
   // Audio analysis for Voice Activity Detection (VAD)
   private audioCtx: AudioContext | null = null;
@@ -13,7 +15,7 @@ class VoiceService {
   private consecutiveSpeakingCount = 0;
   private consecutiveSilentCount = 0;
 
-  // Remote VADs (peerId -> { analyser: AnalyserNode, audioCtx: AudioContext })
+  // Remote VADs (peerId -> AnalyserNode)
   private remoteAnalysers: Map<string, AnalyserNode> = new Map();
 
   private isMuted = false;
@@ -28,23 +30,68 @@ class VoiceService {
     // Listen for incoming media calls from peers
     peer.on('call', (mediaCall) => {
       console.log('[VoiceService] Incoming voice call from:', mediaCall.peer);
+      this.knownPeerIds.add(mediaCall.peer);
+
       if (this.localStream) {
         mediaCall.answer(this.localStream);
       } else {
-        // Answer without local stream if mic not started yet
-        mediaCall.answer();
+        // Answer with silent stream placeholder so incoming audio works immediately
+        const silent = this.getOrCreateSilentStream();
+        mediaCall.answer(silent);
       }
+
       this.setupMediaCall(mediaCall, mediaCall.peer);
     });
+  }
+
+  public registerPeer(peerId: string) {
+    if (!peerId) return;
+    this.knownPeerIds.add(peerId);
+
+    // If we already have microphone active and haven't called this peer, initiate call
+    if (this.localStream && !this.mediaCalls.has(peerId) && this.currentPeer && this.currentPeer.id !== peerId) {
+      this.callPeer(peerId);
+    }
+  }
+
+  public hasLocalStream(): boolean {
+    return !!this.localStream;
   }
 
   public setOnSpeakingChange(cb: (isSpeaking: boolean) => void) {
     this.onSpeakingChangeCallback = cb;
   }
 
+  private getOrCreateSilentStream(): MediaStream {
+    if (this.silentStream && this.silentStream.active && this.silentStream.getAudioTracks().length > 0) {
+      return this.silentStream;
+    }
+
+    try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtxClass) {
+        const ctx = new AudioCtxClass();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0.00001; // virtually silent
+        const dst = ctx.createMediaStreamDestination();
+        oscillator.connect(gain);
+        gain.connect(dst);
+        oscillator.start();
+        this.silentStream = dst.stream;
+        return this.silentStream;
+      }
+    } catch (e) {
+      console.warn('[VoiceService] Could not generate silent stream:', e);
+    }
+
+    return new MediaStream();
+  }
+
   public async startMicrophone(initialMuted = false): Promise<MediaStream | null> {
     if (this.localStream) {
       this.setMute(initialMuted);
+      this.resumeAudioContext();
       return this.localStream;
     }
 
@@ -66,20 +113,30 @@ class VoiceService {
 
       this.setupLocalVAD(stream);
 
-      // If we already have active calls, replace or add our track
-      this.mediaCalls.forEach((call) => {
-        try {
-          const senders = call.peerConnection?.getSenders();
-          const audioSender = senders?.find((s: any) => s.track?.kind === 'audio');
-          const audioTrack = stream.getAudioTracks()[0];
-          if (audioSender && audioTrack) {
-            audioSender.replaceTrack(audioTrack);
+      // 1. Replace track on existing calls if answered previously with silent track
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        this.mediaCalls.forEach((call) => {
+          try {
+            const senders = call.peerConnection?.getSenders();
+            const audioSender = senders?.find((s: any) => s.track?.kind === 'audio');
+            if (audioSender) {
+              audioSender.replaceTrack(audioTrack);
+            }
+          } catch {
+            // Ignore replaceTrack errors
           }
-        } catch {
-          // Ignore replaceTrack errors
+        });
+      }
+
+      // 2. Call all known peers that don't have an active call
+      this.knownPeerIds.forEach((peerId) => {
+        if (!this.mediaCalls.has(peerId) && this.currentPeer && this.currentPeer.id !== peerId) {
+          this.callPeer(peerId);
         }
       });
 
+      this.resumeAudioContext();
       return stream;
     } catch (err) {
       console.warn('[VoiceService] Could not access microphone:', err);
@@ -88,12 +145,16 @@ class VoiceService {
   }
 
   public callPeer(remotePeerId: string) {
-    if (!this.currentPeer || !this.localStream) return;
+    if (!this.currentPeer) return;
+    if (this.currentPeer.id === remotePeerId) return;
     if (this.mediaCalls.has(remotePeerId)) return;
+
+    this.knownPeerIds.add(remotePeerId);
+    const streamToSend = this.localStream || this.getOrCreateSilentStream();
 
     try {
       console.log('[VoiceService] Calling peer for voice:', remotePeerId);
-      const mediaCall = this.currentPeer.call(remotePeerId, this.localStream);
+      const mediaCall = this.currentPeer.call(remotePeerId, streamToSend);
       if (mediaCall) {
         this.setupMediaCall(mediaCall, remotePeerId);
       }
@@ -135,12 +196,36 @@ class VoiceService {
 
     audio.srcObject = stream;
     audio.muted = this.isDeafened;
+    audio.volume = 1.0;
 
-    audio.play().catch(err => {
-      console.warn('[VoiceService] Autoplay prevented for voice stream:', err);
-    });
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('[VoiceService] Autoplay prevented for voice stream:', err);
+        const unblockOnGesture = () => {
+          this.resumeAudioContext();
+          window.removeEventListener('click', unblockOnGesture);
+          window.removeEventListener('keydown', unblockOnGesture);
+          window.removeEventListener('touchstart', unblockOnGesture);
+        };
+        window.addEventListener('click', unblockOnGesture);
+        window.addEventListener('keydown', unblockOnGesture);
+        window.addEventListener('touchstart', unblockOnGesture);
+      });
+    }
 
     this.setupRemoteVAD(peerId, stream);
+  }
+
+  public resumeAudioContext() {
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume().catch(() => {});
+    }
+    this.remoteAudioElements.forEach(audio => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+      }
+    });
   }
 
   private detachRemoteStream(peerId: string) {
@@ -274,6 +359,13 @@ class VoiceService {
       this.localStream = null;
     }
 
+    if (this.silentStream) {
+      this.silentStream.getTracks().forEach(track => {
+        try { track.stop(); } catch { /* ignore */ }
+      });
+      this.silentStream = null;
+    }
+
     this.mediaCalls.forEach(call => {
       try { call.close(); } catch { /* ignore */ }
     });
@@ -288,6 +380,7 @@ class VoiceService {
     });
     this.remoteAudioElements.clear();
     this.remoteAnalysers.clear();
+    this.knownPeerIds.clear();
 
     if (this.audioCtx && this.audioCtx.state !== 'closed') {
       try { this.audioCtx.close(); } catch { /* ignore */ }

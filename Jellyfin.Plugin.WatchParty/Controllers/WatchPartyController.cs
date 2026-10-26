@@ -41,11 +41,11 @@ public class WatchPartyController : ControllerBase
     /// </summary>
     [HttpGet("ws")]
     [AllowAnonymous]
-    public async Task ConnectWebSocket([FromQuery] Guid? roomId)
+    public async Task ConnectWebSocket([FromQuery] string? roomId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
-            var targetRoomId = roomId ?? Guid.Empty;
+            var targetRoomId = string.IsNullOrWhiteSpace(roomId) ? "default" : roomId.Trim();
             var userId = GetCurrentUserId();
             var userName = User.Identity?.Name ?? "Viewer";
 

@@ -94,6 +94,7 @@ export type SyncActionType =
 
 export interface SyncPayload {
   roomId: string;
+  roomCode?: string;
   action: SyncActionType;
   senderId: string;
   senderName: string;
