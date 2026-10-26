@@ -8,11 +8,11 @@
     "category": "General",
     "versions": [
       {
-        "version": "1.0.0.0",
-        "changelog": "Initial release with Netflix UI, sub-100ms sync, live chat, floating reactions, and WebRTC voice chat.",
+        "version": "1.0.1.0",
+        "changelog": "Add full server library selection with live search, filters, and TV series episode picker for Watch Parties.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://raw.githubusercontent.com/AdmGenSameer/watch-party/main/Jellyfin.Plugin.WatchParty_1.0.0.zip",
-        "checksum": "0e1f8058afd02c4dd7143e5455d55f3e",
+        "checksum": "be2d1341a3bcd66b98efce8e6ad7eef2",
         "timestamp": "2026-10-25T00:00:00Z"
       }
     ]
