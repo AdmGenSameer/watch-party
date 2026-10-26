@@ -398,7 +398,7 @@ class WatchPartyService {
     const activeServer = serverUrl || this.serverUrl;
     const activeToken = token || this.token;
     if (activeServer && activeToken && mediaId && !mediaId.startsWith('p') && !mediaId.startsWith('c')) {
-      return `${activeServer}/Videos/${mediaId}/master.m3u8?MediaSourceId=${mediaId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${activeToken}`;
+      return `${activeServer}/Videos/${mediaId}/master.m3u8?MediaSourceId=${mediaId}&DeviceId=tokoshan-web&PlaySessionId=wp_${mediaId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&api_key=${activeToken}`;
     }
     const sample = SAMPLE_FALLBACK_STREAMS[fallbackIndex % SAMPLE_FALLBACK_STREAMS.length];
     return sample.url;

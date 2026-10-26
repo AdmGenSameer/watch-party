@@ -126,7 +126,7 @@ export default function WatchPartyLobby() {
             overview: item.Overview,
             poster: getImageUrl(serverUrl, item.Id, 'Primary', 400, undefined, token),
             backdrop: getImageUrl(serverUrl, item.Id, 'Backdrop', 800, undefined, token),
-            streamUrl: `${serverUrl}/Videos/${item.Id}/master.m3u8?MediaSourceId=${item.Id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${token}`,
+            streamUrl: `${serverUrl}/Videos/${item.Id}/master.m3u8?MediaSourceId=${item.Id}&DeviceId=tokoshan-web&PlaySessionId=wp_${item.Id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&api_key=${token}`,
             duration: item.RunTimeTicks ? Math.floor(item.RunTimeTicks / 10000000) : undefined,
           }));
 
@@ -234,14 +234,14 @@ export default function WatchPartyLobby() {
           seasonNumber: sNum,
           episodeNumber: eNum,
           streamUrl: (serverUrl && token)
-            ? `${serverUrl}/Videos/${chosenEp.Id}/master.m3u8?MediaSourceId=${chosenEp.Id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${token}`
+            ? `${serverUrl}/Videos/${chosenEp.Id}/master.m3u8?MediaSourceId=${chosenEp.Id}&DeviceId=tokoshan-web&PlaySessionId=wp_${chosenEp.Id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&api_key=${token}`
             : selectedMedia.streamUrl
         };
       }
     } else if (serverUrl && token && !selectedMedia.id.startsWith('p')) {
       finalMedia = {
         ...selectedMedia,
-        streamUrl: `${serverUrl}/Videos/${selectedMedia.id}/master.m3u8?MediaSourceId=${selectedMedia.id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${token}`
+        streamUrl: `${serverUrl}/Videos/${selectedMedia.id}/master.m3u8?MediaSourceId=${selectedMedia.id}&DeviceId=tokoshan-web&PlaySessionId=wp_${selectedMedia.id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&api_key=${token}`
       };
     }
 

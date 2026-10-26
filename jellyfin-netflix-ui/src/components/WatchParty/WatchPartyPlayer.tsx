@@ -9,7 +9,12 @@ export default function WatchPartyPlayer() {
   const hlsRef = useRef<Hls | null>(null);
 
   const currentRoom = useWatchPartyStore(state => state.currentRoom);
-  const isHost = useWatchPartyStore(state => state.isHost);
+  const currentUser = useWatchPartyStore(state => state.currentUser);
+  const storeIsHost = useWatchPartyStore(state => state.isHost);
+  const isHost = storeIsHost || (!!currentRoom && (
+    currentRoom.hostId === currentUser?.id ||
+    (Boolean(currentRoom.hostName) && currentRoom.hostName === currentUser?.name)
+  ));
   const syncStatus = useWatchPartyStore(state => state.syncStatus);
   const currentDrift = useWatchPartyStore(state => state.currentDrift);
   const setDrift = useWatchPartyStore(state => state.setDrift);
@@ -30,6 +35,11 @@ export default function WatchPartyPlayer() {
   const [showControls, setShowControls] = useState(true);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
   const controlsTimeoutRef = useRef<any>(null);
+  const currentRoomRef = useRef(currentRoom);
+
+  useEffect(() => {
+    currentRoomRef.current = currentRoom;
+  }, [currentRoom]);
 
   const playableId = currentRoom?.media.episodeId || currentRoom?.media.id;
   const isServerMedia = playableId && !playableId.startsWith('p');
@@ -37,7 +47,8 @@ export default function WatchPartyPlayer() {
   // Compute playable stream URL: transcode via Jellyfin master.m3u8 to universal H.264 + AAC
   const streamUrl = (() => {
     if (authServerUrl && authToken && isServerMedia) {
-      return `${authServerUrl}/Videos/${playableId}/master.m3u8?MediaSourceId=${playableId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${authToken}`;
+      const sessionId = currentRoom?.id ? `tokoshan_${currentRoom.id.replace(/[^a-zA-Z0-9]/g, '')}` : 'tokoshan_player';
+      return `${authServerUrl}/Videos/${playableId}/master.m3u8?MediaSourceId=${playableId}&DeviceId=tokoshan-web&PlaySessionId=${sessionId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&api_key=${authToken}`;
     }
     return currentRoom?.media.streamUrl || '';
   })();
@@ -52,11 +63,14 @@ export default function WatchPartyPlayer() {
   const handleRetryPlayback = () => {
     setPlaybackError(null);
     const video = videoRef.current;
-    if (video) {
+    if (hlsRef.current && streamUrl) {
+      hlsRef.current.loadSource(streamUrl);
+      if (video) {
+        hlsRef.current.attachMedia(video);
+      }
+    } else if (video && streamUrl) {
+      video.src = streamUrl;
       video.load();
-    }
-    if (hlsRef.current) {
-      hlsRef.current.startLoad();
     }
   };
 
@@ -69,12 +83,22 @@ export default function WatchPartyPlayer() {
 
     if (streamUrl.includes('.m3u8')) {
       if (Hls.isSupported()) {
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 90,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          maxBufferHole: 0.5,
+          highBufferWatchdogPeriod: 2,
+          nudgeOffset: 0.1,
+          nudgeMaxRetry: 5,
+        });
         hlsRef.current = hls;
 
         hls.on(Hls.Events.ERROR, (_event, data) => {
-          console.error('[WatchParty HLS Error]', data);
           if (data.fatal) {
+            console.error('[WatchParty HLS Fatal Error]', data.type, data.details);
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
                 hls.startLoad();
@@ -87,6 +111,8 @@ export default function WatchPartyPlayer() {
                 setPlaybackError(`Playback failed: ${data.details}`);
                 break;
             }
+          } else {
+            console.warn('[WatchParty HLS Warning]', data.details);
           }
         });
 
@@ -114,18 +140,15 @@ export default function WatchPartyPlayer() {
 
     const syncPlayback = () => {
       const serverNow = Date.now();
-      const elapsedSinceUpdate = (serverNow - currentRoom.updatedAt) / 1000;
+      const elapsedSinceUpdate = currentRoom.updatedAt ? Math.max(0, (serverNow - currentRoom.updatedAt) / 1000) : 0;
       const expectedPos = currentRoom.isPlaying 
-        ? currentRoom.currentTime + Math.max(0, elapsedSinceUpdate)
+        ? currentRoom.currentTime + elapsedSinceUpdate
         : currentRoom.currentTime;
-
-      const drift = (video.currentTime - expectedPos) * 1000; // in ms
-      setDrift(drift);
 
       // 1. Play / Pause alignment
       if (currentRoom.isPlaying && video.paused) {
         video.play().catch(() => {
-          // Autoplay policy might require user click
+          // Autoplay policy might require explicit user interaction
         });
       } else if (!currentRoom.isPlaying && !video.paused) {
         video.pause();
@@ -133,36 +156,48 @@ export default function WatchPartyPlayer() {
 
       // 2. Drift correction for Guests
       if (!isHost) {
+        // Do not correct drift if video is buffering or actively seeking
+        if (video.seeking || video.readyState < 2) {
+          return;
+        }
+
+        const drift = (video.currentTime - expectedPos) * 1000; // in ms
+        setDrift(drift);
+
         const absDrift = Math.abs(drift);
-        if (absDrift > 250) {
-          // Hard seek for significant drift
+        if (absDrift > 2500) {
+          // Hard seek only for major drift (> 2.5s)
           video.currentTime = expectedPos;
-        } else if (absDrift > 30) {
-          // Micro-playback rate adjustment (no audio artifact)
-          video.playbackRate = drift > 0 ? 0.97 : 1.03;
+          video.playbackRate = 1.0;
+        } else if (absDrift > 400) {
+          // Smooth micro playback rate adjustment without audio artifact
+          video.playbackRate = drift > 0 ? 0.95 : 1.05;
         } else {
           // In sync!
           video.playbackRate = 1.0;
         }
+      } else {
+        video.playbackRate = 1.0;
       }
     };
 
     syncPlayback();
-  }, [currentRoom, isHost, setDrift]);
+  }, [currentRoom?.isPlaying, currentRoom?.currentTime, currentRoom?.updatedAt, isHost, setDrift]);
 
-  // Host Heartbeat Broadcast Loop (every 2 seconds)
+  // Host Heartbeat Broadcast Loop (every 3 seconds)
   useEffect(() => {
-    if (!isHost || !currentRoom) return;
+    if (!isHost) return;
 
     const interval = setInterval(() => {
       const video = videoRef.current;
-      if (video && !video.paused) {
+      const room = currentRoomRef.current;
+      if (video && !video.paused && !video.seeking && room) {
         sendHeartbeat(video.currentTime);
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [isHost, currentRoom, sendHeartbeat]);
+  }, [isHost, sendHeartbeat]);
 
   // Video event handlers
   const handleTimeUpdate = () => {
@@ -187,8 +222,10 @@ export default function WatchPartyPlayer() {
     if (!video) return;
 
     if (video.paused) {
+      video.play().catch(console.error);
       sendPlay(video.currentTime);
     } else {
+      video.pause();
       sendPause(video.currentTime);
     }
   };

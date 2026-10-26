@@ -57,8 +57,34 @@ interface WatchPartyState {
   toggleDeafen: () => void;
 }
 
-// Generate random user for current session if not logged in
-const generateDefaultUser = (): UserInfo => {
+// Persistent user session across reloads and navigation
+const getPersistentUser = (): UserInfo => {
+  if (typeof window !== 'undefined') {
+    try {
+      // 1. Check logged-in Jellyfin user
+      const authRaw = localStorage.getItem('jellyfin-auth-storage');
+      if (authRaw) {
+        const parsed = JSON.parse(authRaw);
+        if (parsed?.state?.userId) {
+          return {
+            id: parsed.state.userId,
+            name: parsed.state.username || 'Jellyfin User',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&h=150&fit=crop'
+          };
+        }
+      }
+
+      // 2. Check saved tokoshan_user
+      const saved = localStorage.getItem('tokoshan_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.id) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const randomId = 'u_' + Math.random().toString(36).substring(2, 9);
   const avatars = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&h=150&fit=crop',
@@ -69,8 +95,12 @@ const generateDefaultUser = (): UserInfo => {
   const names = ['Alex Fox', 'Jordan Blake', 'Taylor Swift', 'Morgan Cole', 'Sam Rivers', 'Casey Sky'];
   const name = names[Math.floor(Math.random() * names.length)];
   const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+  const user = { id: randomId, name, avatar };
 
-  return { id: randomId, name, avatar };
+  if (typeof window !== 'undefined') {
+    try { localStorage.setItem('tokoshan_user', JSON.stringify(user)); } catch {}
+  }
+  return user;
 };
 
 const generateRoomCode = (): string => {
@@ -84,7 +114,7 @@ const generateRoomCode = (): string => {
 
 export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
   let unsubscribeSync: (() => void) | null = null;
-  const initialUser = generateDefaultUser();
+  const initialUser = getPersistentUser();
 
   // Setup broadcast / SignalR listener
   const setupListener = () => {
@@ -130,10 +160,14 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         }
 
         case 'HEARTBEAT': {
+          // If this client is the host, never overwrite currentRoom from an incoming heartbeat
+          if (state.isHost) {
+            break;
+          }
           if (payload.room) {
             set({ currentRoom: payload.room });
             watchPartyService.saveRoom(payload.room);
-          } else if (payload.senderId === state.currentRoom.hostId) {
+          } else if (payload.senderId === state.currentRoom.hostId || (Boolean(state.currentRoom.hostName) && payload.senderName === state.currentRoom.hostName)) {
             const hostTime = payload.currentTime ?? state.currentRoom.currentTime;
             const updatedRoom = {
               ...state.currentRoom,
@@ -460,7 +494,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         };
       }
 
-      const isHost = targetRoom.hostId === user.id;
+      const isHost = targetRoom.hostId === user.id || (Boolean(targetRoom.hostName) && targetRoom.hostName === user.name);
 
       const memberExists = targetRoom.members.some(m => m.id === user.id);
       const members = memberExists 
@@ -675,6 +709,14 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       const { currentRoom, currentUser, isHost } = get();
       if (!currentRoom || !isHost) return;
 
+      const now = Date.now();
+      const updatedRoom = {
+        ...currentRoom,
+        currentTime,
+        updatedAt: now
+      };
+      set({ currentRoom: updatedRoom });
+
       watchPartyService.broadcast({
         roomId: currentRoom.id,
         action: 'HEARTBEAT',
@@ -682,7 +724,7 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         senderName: currentUser.name,
         currentTime,
         isPlaying: currentRoom.isPlaying,
-        timestamp: Date.now()
+        timestamp: now
       });
     },
 
