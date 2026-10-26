@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Plugin.WatchParty.Controllers;
 
 /// <summary>
-/// REST API controller for managing Watch Party sessions, rooms, and chat records.
+/// REST API controller for managing Watch Party sessions, rooms, chat records, and WebSockets.
 /// </summary>
 [ApiController]
 [Route("api/watchparty")]
@@ -21,14 +21,41 @@ public class WatchPartyController : ControllerBase
 {
     private readonly IWatchPartyManager _roomManager;
     private readonly IChatService _chatService;
+    private readonly IWatchPartyWebSocketService _webSocketService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WatchPartyController"/> class.
     /// </summary>
-    public WatchPartyController(IWatchPartyManager roomManager, IChatService chatService)
+    public WatchPartyController(
+        IWatchPartyManager roomManager,
+        IChatService chatService,
+        IWatchPartyWebSocketService webSocketService)
     {
         _roomManager = roomManager;
         _chatService = chatService;
+        _webSocketService = webSocketService;
+    }
+
+    /// <summary>
+    /// WebSocket endpoint for real-time room synchronization.
+    /// </summary>
+    [HttpGet("ws")]
+    [AllowAnonymous]
+    public async Task ConnectWebSocket([FromQuery] Guid? roomId)
+    {
+        if (HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            var targetRoomId = roomId ?? Guid.Empty;
+            var userId = GetCurrentUserId();
+            var userName = User.Identity?.Name ?? "Viewer";
+
+            using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+            await _webSocketService.HandleWebSocketAsync(webSocket, targetRoomId, userId, userName, HttpContext.RequestAborted).ConfigureAwait(false);
+        }
+        else
+        {
+            HttpContext.Response.StatusCode = 400;
+        }
     }
 
     /// <summary>

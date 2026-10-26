@@ -1,5 +1,4 @@
 import { Peer, type DataConnection } from 'peerjs';
-import * as signalR from '@microsoft/signalr';
 import type { WatchPartyRoom, SyncPayload } from '../types/watchParty';
 import { voiceService } from './voiceService';
 
@@ -33,7 +32,6 @@ const ICE_SERVERS = [
 
 class WatchPartyService {
   private channel: BroadcastChannel | null = null;
-  private hubConnection: signalR.HubConnection | null = null;
   private listeners: ((payload: SyncPayload) => void)[] = [];
   private serverUrl: string | null = null;
   private token: string | null = null;
@@ -224,44 +222,51 @@ class WatchPartyService {
     return this.peer?.id || null;
   }
 
-  // --- SignalR Optional Hub (for backward compatibility if backend hub is online) ---
+  // --- Native WebSocket Connection to Jellyfin WatchParty API ---
+  private wsConnection: WebSocket | null = null;
 
   public initServer(serverUrl: string | null, token: string | null) {
     this.serverUrl = serverUrl;
     this.token = token;
 
-    if (serverUrl && token) {
-      this.connectSignalR(serverUrl, token).catch(() => {
-        console.info('SignalR backend not running. Operating in P2P WebRTC / Local mode.');
-      });
+    if (serverUrl) {
+      this.connectWebSocket(serverUrl);
     }
   }
 
-  private async connectSignalR(serverUrl: string, token: string) {
+  private connectWebSocket(serverUrl: string) {
     try {
-      if (this.hubConnection) {
-        await this.hubConnection.stop();
+      if (this.wsConnection) {
+        try { this.wsConnection.close(); } catch { /* ignore */ }
+        this.wsConnection = null;
       }
 
-      this.hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl(`${serverUrl}/hubs/watchparty`, {
-          accessTokenFactory: () => token,
-          skipNegotiation: false,
-          transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
-        })
-        .withAutomaticReconnect([0, 2000, 5000, 10000])
-        .configureLogging(signalR.LogLevel.Warning)
-        .build();
+      const isHttps = typeof window !== 'undefined' && (window.location.protocol === 'https:' || serverUrl.startsWith('https:'));
+      const wsProtocol = isHttps ? 'wss:' : 'ws:';
+      const host = serverUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const wsUrl = `${wsProtocol}//${host}/api/watchparty/ws`;
 
-      this.hubConnection.on('SyncMessage', (payload: SyncPayload) => {
-        this.notifyListeners(payload);
-      });
+      const ws = new WebSocket(wsUrl);
+      this.wsConnection = ws;
 
-      await this.hubConnection.start();
-      console.log('Connected to Watch Party SignalR Hub');
-    } catch (err) {
-      this.hubConnection = null;
-      throw err;
+      ws.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data) as SyncPayload;
+          this.notifyListeners(payload);
+        } catch {
+          // ignore
+        }
+      };
+
+      ws.onopen = () => {
+        console.log('[WebSocket] Connected to Watch Party sync server at', wsUrl);
+      };
+
+      ws.onerror = () => {
+        console.info('[WebSocket] Notice: Falling back to WebRTC P2P direct mesh');
+      };
+    } catch {
+      console.info('[WebSocket] Could not open WebSocket, using WebRTC P2P direct mesh');
     }
   }
 
@@ -307,11 +312,13 @@ class WatchPartyService {
       }
     }
 
-    // 4. SignalR Hub (if connected)
-    if (this.hubConnection && this.hubConnection.state === signalR.HubConnectionState.Connected) {
-      this.hubConnection.invoke('BroadcastSync', payload).catch(() => {
+    // 4. Native WebSocket broadcast (if open)
+    if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+      try {
+        this.wsConnection.send(JSON.stringify(payload));
+      } catch {
         // fail silently
-      });
+      }
     }
   }
 
