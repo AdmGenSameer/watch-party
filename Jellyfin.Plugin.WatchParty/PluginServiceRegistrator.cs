@@ -1,11 +1,8 @@
-using System.IO;
 using Jellyfin.Plugin.WatchParty.Data;
 using Jellyfin.Plugin.WatchParty.Services;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Plugin.WatchParty;
@@ -21,22 +18,13 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         // SignalR services
         serviceCollection.AddSignalR();
 
-        // Core Watch Party Room management
+        // Core Watch Party Room management (singleton)
         serviceCollection.AddSingleton<IWatchPartyManager, WatchPartyManager>();
 
-        // Chat service & SQLite persistence
-        serviceCollection.AddScoped<IChatService, ChatService>();
-        serviceCollection.AddHostedService<WatchPartyDbMigrator>();
+        // Chat service persistence (singleton with thread-safe caching and JSON backup)
+        serviceCollection.AddSingleton<IChatService, ChatService>();
 
         // Wire SignalR endpoint through ASP.NET Core startup filter
         serviceCollection.AddTransient<IStartupFilter, WatchPartyStartupFilter>();
-
-        // Isolated SQLite database in Jellyfin Data folder
-        serviceCollection.AddDbContext<WatchPartyDbContext>((serviceProvider, options) =>
-        {
-            var paths = serviceProvider.GetRequiredService<IApplicationPaths>();
-            var databasePath = Path.Combine(paths.DataPath, "watchparty.db");
-            options.UseSqlite($"Data Source={databasePath}");
-        });
     }
 }

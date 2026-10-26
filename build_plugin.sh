@@ -9,48 +9,68 @@ fi
 
 echo "=========================================================="
 echo "  Jellyfin WatchParty & Tokoshan UI Plugin Build Script   "
+echo "  Targeting Jellyfin 10.11 (.NET 9.0)                     "
 echo "=========================================================="
 
 echo "[1/4] Building React 19 Frontend SPA..."
 cd "${SCRIPT_DIR}/jellyfin-netflix-ui"
 npm run build
 
-echo "[2/4] Compiling & Publishing .NET 10 Plugin DLL..."
+echo "[2/4] Compiling .NET 9 Plugin DLL..."
 cd "${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty"
-rm -rf ./bin/publish
-"$DOTNET_BIN" publish -c Release -o ./bin/publish
+"$DOTNET_BIN" build -c Release
 
-echo "[3/4] Copying Plugin Manifest..."
-cp meta.json ./bin/publish/
+DLL_PATH="${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty/bin/Release/net9.0/Jellyfin.Plugin.WatchParty.dll"
+META_PATH="${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty/meta.json"
 
-echo "[4/4] Packaging Plugin ZIP Archive..."
-cd ./bin/publish
-rm -f *.pdb *.xml
-rm -rf runtimes
-rm -f Emby.* Jellyfin.Database.* Jellyfin.Data.* Jellyfin.Extensions.* Jellyfin.MediaEncoding.*
+if [ ! -f "$DLL_PATH" ]; then
+    echo "ERROR: DLL not found at $DLL_PATH"
+    exit 1
+fi
+
+echo "[3/4] Packaging Clean Plugin ZIP Archive (DLL + meta.json)..."
+OUTPUT_ZIP="${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty_1.0.0.zip"
+rm -f "$OUTPUT_ZIP"
+
 python3 -c "
-import zipfile, os, shutil
-output_zip = 'Jellyfin.Plugin.WatchParty_1.0.0.zip'
-with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as z:
-    for root, dirs, files in os.walk('.'):
-        for file in files:
-            if file.endswith('.pdb') or file.endswith('.zip') or file.endswith('.xml'):
-                continue
-            filepath = os.path.join(root, file)
-            arcname = os.path.relpath(filepath, '.')
-            z.write(filepath, arcname)
-shutil.copyfile(output_zip, '${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty_1.0.0.zip')
-shutil.copyfile(output_zip, '../Jellyfin.Plugin.WatchParty_1.0.0.zip')
-print(f'Archive created: ${SCRIPT_DIR}/Jellyfin.Plugin.WatchParty_1.0.0.zip')
+import zipfile
+import hashlib
+import json
+
+zip_path = '${OUTPUT_ZIP}'
+dll_path = '${DLL_PATH}'
+meta_path = '${META_PATH}'
+
+# Compress exactly DLL and meta.json (JellyBridge standard)
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+    z.write(dll_path, 'Jellyfin.Plugin.WatchParty.dll')
+    z.write(meta_path, 'meta.json')
+
+# Compute MD5
+with open(zip_path, 'rb') as f:
+    checksum = hashlib.md5(f.read()).hexdigest()
+
+print(f'Zip created at: {zip_path}')
+print(f'MD5 Checksum: {checksum}')
+
+# Update manifest.json
+manifest_file = '${SCRIPT_DIR}/manifest.json'
+with open(manifest_file, 'r') as f:
+    manifest = json.load(f)
+
+manifest[0]['versions'][0]['checksum'] = checksum
+manifest[0]['versions'][0]['targetAbi'] = '10.11.0.0'
+
+with open(manifest_file, 'w') as f:
+    json.dump(manifest, f, indent=2)
+
+print(f'Updated manifest.json with checksum {checksum}')
 "
+
+echo "[4/4] Verifying Package Archive..."
+unzip -l "$OUTPUT_ZIP"
 
 echo "=========================================================="
 echo "  BUILD SUCCESSFUL!                                       "
 echo "  Package: Jellyfin.Plugin.WatchParty_1.0.0.zip           "
-echo "=========================================================="
-echo "Installation Instructions:"
-echo "1. Go to Jellyfin Dashboard -> Admin -> Plugins -> Repositories / Upload"
-echo "2. Upload Jellyfin.Plugin.WatchParty_1.0.0.zip or copy to plugins/ folder"
-echo "3. Restart Jellyfin"
-echo "4. Open http://<jellyfin-host>:8096/tokoshan/ in your browser"
 echo "=========================================================="

@@ -6,8 +6,10 @@
   "owner": "Tokoshan",
   "category": "General",
   "version": "1.0.0.0",
-  "targetAbi": "10.9.0.0",
+  "changelog": "Initial release with Netflix UI, sub-100ms sync, live chat, floating reactions, and WebRTC voice chat for Jellyfin 10.11.",
+  "targetAbi": "10.11.0.0",
   "status": "Active",
+  "autoUpdate": true,
   "assemblies": [
     "Jellyfin.Plugin.WatchParty.dll"
   ]

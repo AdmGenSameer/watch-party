@@ -10,9 +10,9 @@
       {
         "version": "1.0.0.0",
         "changelog": "Initial release with Netflix UI, sub-100ms sync, live chat, floating reactions, and WebRTC voice chat.",
-        "targetAbi": "10.9.0.0",
+        "targetAbi": "10.11.0.0",
         "sourceUrl": "https://raw.githubusercontent.com/AdmGenSameer/watch-party/main/Jellyfin.Plugin.WatchParty_1.0.0.zip",
-        "checksum": "fd0bf208ec885b6ac7769fe23cd83253",
+        "checksum": "9068fdd4fa6df36b155955ed43713fb0",
         "timestamp": "2026-10-25T00:00:00Z"
       }
     ]
