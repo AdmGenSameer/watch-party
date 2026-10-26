@@ -49,7 +49,7 @@ export default function DetailModal({ movie, onClose }: DetailModalProps) {
       backdrop: movie.backdrop,
       poster: movie.poster,
       overview: movie.overview,
-      streamUrl: serverUrl && token ? `${serverUrl}/Videos/${movie.id}/stream.mp4?static=true&api_key=${token}` : undefined
+      streamUrl: serverUrl && token ? `${serverUrl}/Videos/${movie.id}/master.m3u8?MediaSourceId=${movie.id}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${token}` : undefined
     });
     onClose();
     navigate(`/party/${room.id}`);

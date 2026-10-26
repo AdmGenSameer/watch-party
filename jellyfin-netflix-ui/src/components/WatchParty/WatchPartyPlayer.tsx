@@ -28,20 +28,16 @@ export default function WatchPartyPlayer() {
   const [volume, setVolume] = useState(0.9);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [useHlsFallback, setUseHlsFallback] = useState(false);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
   const controlsTimeoutRef = useRef<any>(null);
 
   const playableId = currentRoom?.media.episodeId || currentRoom?.media.id;
   const isServerMedia = playableId && !playableId.startsWith('p');
 
-  // Compute playable stream URL: authenticated user's own token + server, or fallback to room streamUrl
+  // Compute playable stream URL: transcode via Jellyfin master.m3u8 to universal H.264 + AAC
   const streamUrl = (() => {
     if (authServerUrl && authToken && isServerMedia) {
-      if (useHlsFallback) {
-        return `${authServerUrl}/Videos/${playableId}/main.m3u8?api_key=${authToken}`;
-      }
-      return `${authServerUrl}/Videos/${playableId}/stream.mp4?static=true&api_key=${authToken}`;
+      return `${authServerUrl}/Videos/${playableId}/master.m3u8?MediaSourceId=${playableId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${authToken}`;
     }
     return currentRoom?.media.streamUrl || '';
   })();
@@ -49,21 +45,18 @@ export default function WatchPartyPlayer() {
   const isHostLocked = !!currentRoom?.permissions.hostOnlyControl && !isHost;
 
   const handleVideoError = () => {
-    if (!useHlsFallback && authServerUrl && authToken && isServerMedia) {
-      console.warn('[WatchParty] Direct mp4 failed, attempting HLS transcode fallback...');
-      setUseHlsFallback(true);
-    } else {
-      console.error('[WatchParty] Playback failed for stream:', streamUrl);
-      setPlaybackError('Could not stream this title from the Jellyfin server. Please verify transcode settings or video permissions.');
-    }
+    console.error('[WatchParty] Playback failed for stream:', streamUrl);
+    setPlaybackError('Could not stream this title from the Jellyfin server. Please verify transcode settings or video permissions.');
   };
 
   const handleRetryPlayback = () => {
     setPlaybackError(null);
-    setUseHlsFallback(false);
     const video = videoRef.current;
     if (video) {
       video.load();
+    }
+    if (hlsRef.current) {
+      hlsRef.current.startLoad();
     }
   };
 
@@ -78,6 +71,25 @@ export default function WatchPartyPlayer() {
       if (Hls.isSupported()) {
         const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsRef.current = hls;
+
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          console.error('[WatchParty HLS Error]', data);
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError();
+                break;
+              default:
+                hls.destroy();
+                setPlaybackError(`Playback failed: ${data.details}`);
+                break;
+            }
+          }
+        });
+
         hls.loadSource(streamUrl);
         hls.attachMedia(video);
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {

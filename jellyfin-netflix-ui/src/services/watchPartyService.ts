@@ -244,7 +244,8 @@ class WatchPartyService {
       const isHttps = typeof window !== 'undefined' && (window.location.protocol === 'https:' || serverUrl.startsWith('https:'));
       const wsProtocol = isHttps ? 'wss:' : 'ws:';
       const host = serverUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      const wsUrl = `${wsProtocol}//${host}/api/watchparty/ws`;
+      const tokenParam = this.token ? `?api_key=${encodeURIComponent(this.token)}` : '';
+      const wsUrl = `${wsProtocol}//${host}/api/watchparty/ws${tokenParam}`;
 
       const ws = new WebSocket(wsUrl);
       this.wsConnection = ws;
@@ -387,7 +388,7 @@ class WatchPartyService {
     const activeServer = serverUrl || this.serverUrl;
     const activeToken = token || this.token;
     if (activeServer && activeToken && mediaId && !mediaId.startsWith('p') && !mediaId.startsWith('c')) {
-      return `${activeServer}/Videos/${mediaId}/stream.mp4?static=true&api_key=${activeToken}`;
+      return `${activeServer}/Videos/${mediaId}/master.m3u8?MediaSourceId=${mediaId}&VideoCodec=h264&AudioCodec=aac,mp3&VideoBitrate=12000000&AudioBitrate=320000&TranscodingMaxAudioChannels=2&SegmentContainer=ts&api_key=${activeToken}`;
     }
     const sample = SAMPLE_FALLBACK_STREAMS[fallbackIndex % SAMPLE_FALLBACK_STREAMS.length];
     return sample.url;
