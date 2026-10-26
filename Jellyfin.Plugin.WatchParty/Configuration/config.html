@@ -17,9 +17,36 @@
                     </div>
                 </div>
 
-                <div style="background:rgba(255,255,255,0.05); padding:16px 20px; border-radius:10px; margin-bottom:24px; border-left:4px solid #e50914;">
-                    <div style="font-weight:600; margin-bottom:6px;">🚀 Access Tokoshan Cinema UI:</div>
-                    <div>Navigate directly to <a id="tokoshanLink" href="/tokoshan/" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">/tokoshan/</a> in your browser to launch the cinema experience.</div>
+                <div style="background:rgba(255,255,255,0.05); padding:16px 20px; border-radius:10px; margin-bottom:20px; border-left:4px solid #e50914;">
+                    <div style="font-weight:600; margin-bottom:6px;">🚀 Client Navigation Integration:</div>
+                    <div style="margin-bottom:8px;">
+                        <strong>✓ Native Navigation Drawer (Active):</strong> A <strong>"Watch Party"</strong> menu entry with a group icon is automatically registered in the Jellyfin sidebar (Library section) for Jellyfin Web and Jellyfin Media Player Desktop!
+                    </div>
+                    <div>Direct URL: <a id="tokoshanLink" href="/tokoshan/" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">/tokoshan/</a></div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); padding:16px 20px; border-radius:10px; margin-bottom:24px; border-left:4px solid #4a90e2;">
+                    <div style="font-weight:600; margin-bottom:6px;">💡 Optional: Direct Sidebar Button via Custom JavaScript</div>
+                    <p style="margin:0 0 10px; font-size:0.9rem; color:#bbb;">
+                        If you prefer a direct link that navigates the full window directly to <code>/tokoshan/</code> instead of the embedded cinema frame, paste this into <em>Dashboard &gt; General &gt; Custom JavaScript code</em>:
+                    </p>
+                    <pre style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; font-size:12px; overflow-x:auto; color:#a3e635; margin:0;"><code>(function() {
+  function addWatchPartyButton() {
+    const navDrawer = document.querySelector('.mainDrawer-scrollContainer');
+    if (navDrawer && !document.querySelector('#nav-watchparty')) {
+      const link = document.createElement('a');
+      link.id = 'nav-watchparty';
+      link.className = 'navMenuOption emby-button';
+      link.href = '/tokoshan/';
+      link.innerHTML = `
+        <span class="material-icons navMenuOptionIcon">groups</span>
+        <span class="navMenuOptionText">Watch Party</span>
+      `;
+      navDrawer.appendChild(link);
+    }
+  }
+  setInterval(addWatchPartyButton, 1000);
+})();</code></pre>
                 </div>
 
                 <form class="watchPartyConfigForm">

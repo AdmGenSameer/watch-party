@@ -43,13 +43,25 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()
     {
+        // Admin Settings Page in Dashboard -> Plugins
         yield return new PluginPageInfo
         {
             Name = Name,
+            DisplayName = "Watch Party Settings",
             EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.config.html",
+            EnableInMainMenu = false,
+            MenuSection = "server"
+        };
+
+        // User-Facing Watch Party Page inside Desktop & Web Drawer Menu
+        yield return new PluginPageInfo
+        {
+            Name = "WatchPartyCinema",
+            DisplayName = "Watch Party",
+            EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.cinema_frame.html",
             EnableInMainMenu = true,
-            MenuSection = "server",
-            MenuIcon = "play_circle"
+            MenuSection = "library",
+            MenuIcon = "groups"
         };
     }
 }

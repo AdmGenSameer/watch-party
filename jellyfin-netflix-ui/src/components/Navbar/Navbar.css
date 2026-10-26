@@ -42,6 +42,19 @@
   color: var(--accent-gold);
 }
 
+.jellyfin-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.jellyfin-nav-link:hover {
+  color: #38bdf8;
+  opacity: 1;
+}
+
 .nav-brand {
   font-weight: 700;
   font-size: 1.2rem;

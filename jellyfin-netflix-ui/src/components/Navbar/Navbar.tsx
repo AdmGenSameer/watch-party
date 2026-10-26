@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Bell, X } from 'lucide-react';
+import { Search, Bell, X, Tv } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUIStore } from '../../store/useUIStore';
@@ -95,6 +95,15 @@ export default function Navbar({ onLogout }: NavbarProps) {
           <NavLink to="/party" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Watch Party
           </NavLink>
+          <a 
+            href="/web/index.html" 
+            target="_top" 
+            className="nav-link jellyfin-nav-link" 
+            title="Return to Jellyfin Web"
+          >
+            <Tv size={15} />
+            <span>Jellyfin</span>
+          </a>
         </div>
         
         <div className="nav-actions">

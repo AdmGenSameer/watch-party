@@ -12,7 +12,7 @@
         "changelog": "Add full server library selection with live search, filters, and TV series episode picker for Watch Parties.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://raw.githubusercontent.com/AdmGenSameer/watch-party/main/Jellyfin.Plugin.WatchParty_1.0.0.zip",
-        "checksum": "3793af01ec866a8879b454950a982cb3",
+        "checksum": "c0fac2c6b7e8eac692f47db4dfa806b3",
         "timestamp": "2026-10-25T00:00:00Z"
       }
     ]
