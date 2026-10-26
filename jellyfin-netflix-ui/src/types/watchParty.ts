@@ -8,6 +8,10 @@ export interface WatchPartyMedia {
   duration?: number;
   overview?: string;
   year?: number;
+  episodeId?: string;
+  episodeTitle?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
 }
 
 export interface RoomPermissions {

@@ -192,3 +192,45 @@ export const formatRunTime = (ticks?: number) => {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 };
+
+export interface GetAllServerMediaOptions {
+  searchTerm?: string;
+  itemType?: 'Movie' | 'Series' | 'All';
+  limit?: number;
+  startIndex?: number;
+}
+
+export const getAllServerMedia = async (
+  serverUrl: string,
+  userId: string,
+  token: string,
+  options?: GetAllServerMediaOptions
+) => {
+  const api = getApi(serverUrl, token);
+  let includeItemTypes: BaseItemKind[] = [BaseItemKind.Movie, BaseItemKind.Series];
+  if (options?.itemType === 'Movie') {
+    includeItemTypes = [BaseItemKind.Movie];
+  } else if (options?.itemType === 'Series') {
+    includeItemTypes = [BaseItemKind.Series];
+  }
+
+  const response = await getItemsApi(api).getItems({
+    userId,
+    searchTerm: options?.searchTerm ? options.searchTerm.trim() : undefined,
+    includeItemTypes,
+    recursive: true,
+    sortBy: [ItemSortBy.SortName],
+    sortOrder: [SortOrder.Ascending],
+    fields: [
+      ItemFields.Overview,
+      ItemFields.PrimaryImageAspectRatio,
+      ItemFields.Genres,
+      ItemFields.MediaStreams
+    ],
+    limit: options?.limit ?? 150,
+    startIndex: options?.startIndex ?? 0,
+    enableTotalRecordCount: true
+  });
+  return response.data;
+};
+

@@ -90,7 +90,9 @@ export default function WatchPartyTheater() {
           <div className="theater-titles">
             <div className="theater-room-name">{currentRoom.name}</div>
             <div className="theater-movie-title">
-              {currentRoom.media.title}{currentRoom.media.year ? ` · ${currentRoom.media.year}` : ''}
+              {currentRoom.media.title}
+              {currentRoom.media.episodeTitle ? ` · ${currentRoom.media.episodeTitle}` : ''}
+              {currentRoom.media.year ? ` · ${currentRoom.media.year}` : ''}
             </div>
           </div>
         </div>

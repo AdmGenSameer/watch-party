@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Lock, RotateCcw, RotateCw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Lock, RotateCcw, RotateCw, AlertTriangle, RefreshCw } from 'lucide-react';
 import Hls from 'hls.js';
 import { useWatchPartyStore } from '../../store/useWatchPartyStore';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function WatchPartyPlayer() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -18,21 +19,60 @@ export default function WatchPartyPlayer() {
   const sendHeartbeat = useWatchPartyStore(state => state.sendHeartbeat);
   const setBuffering = useWatchPartyStore(state => state.setBuffering);
 
+  const authServerUrl = useAuthStore(state => state.serverUrl);
+  const authToken = useAuthStore(state => state.token);
+
   const [isPlayingLocal, setIsPlayingLocal] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.9);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [useHlsFallback, setUseHlsFallback] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const controlsTimeoutRef = useRef<any>(null);
 
-  const streamUrl = currentRoom?.media.streamUrl || '';
+  const playableId = currentRoom?.media.episodeId || currentRoom?.media.id;
+  const isServerMedia = playableId && !playableId.startsWith('p');
+
+  // Compute playable stream URL: authenticated user's own token + server, or fallback to room streamUrl
+  const streamUrl = (() => {
+    if (authServerUrl && authToken && isServerMedia) {
+      if (useHlsFallback) {
+        return `${authServerUrl}/Videos/${playableId}/main.m3u8?api_key=${authToken}`;
+      }
+      return `${authServerUrl}/Videos/${playableId}/stream.mp4?static=true&api_key=${authToken}`;
+    }
+    return currentRoom?.media.streamUrl || '';
+  })();
+
   const isHostLocked = !!currentRoom?.permissions.hostOnlyControl && !isHost;
+
+  const handleVideoError = () => {
+    if (!useHlsFallback && authServerUrl && authToken && isServerMedia) {
+      console.warn('[WatchParty] Direct mp4 failed, attempting HLS transcode fallback...');
+      setUseHlsFallback(true);
+    } else {
+      console.error('[WatchParty] Playback failed for stream:', streamUrl);
+      setPlaybackError('Could not stream this title from the Jellyfin server. Please verify transcode settings or video permissions.');
+    }
+  };
+
+  const handleRetryPlayback = () => {
+    setPlaybackError(null);
+    setUseHlsFallback(false);
+    const video = videoRef.current;
+    if (video) {
+      video.load();
+    }
+  };
 
   // Initialize HLS / Video source
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !streamUrl) return;
+
+    setPlaybackError(null);
 
     if (streamUrl.includes('.m3u8')) {
       if (Hls.isSupported()) {
@@ -275,8 +315,21 @@ export default function WatchPartyPlayer() {
         onPause={() => setIsPlayingLocal(false)}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => setBuffering(false)}
+        onError={handleVideoError}
         onClick={handlePlayPause}
       />
+
+      {/* Playback Error Overlay */}
+      {playbackError && (
+        <div className="player-error-overlay">
+          <AlertTriangle size={36} color="#ef4444" style={{ marginBottom: 12 }} />
+          <p className="player-error-text">{playbackError}</p>
+          <button type="button" className="btn-retry-stream" onClick={handleRetryPlayback}>
+            <RefreshCw size={14} />
+            <span>Retry Playback</span>
+          </button>
+        </div>
+      )}
 
       {/* Video Controls Bar */}
       <div
