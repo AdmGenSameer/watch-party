@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Shield, ShieldAlert, MessageSquare, Crown, Mic, MicOff, Headphones, VolumeX } from 'lucide-react';
+import { ArrowLeft, Copy, Shield, ShieldAlert, MessageSquare, Crown, Mic, MicOff, Headphones, VolumeX, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWatchPartyStore } from '../../store/useWatchPartyStore';
 import WatchPartyPlayer from './WatchPartyPlayer';
@@ -20,6 +20,7 @@ export default function WatchPartyTheater() {
   const toggleChat      = useWatchPartyStore(state => state.toggleChat);
   const joinRoom        = useWatchPartyStore(state => state.joinRoom);
   const leaveRoom       = useWatchPartyStore(state => state.leaveRoom);
+  const deleteRoom      = useWatchPartyStore(state => state.deleteRoom);
   const updatePermissions = useWatchPartyStore(state => state.updatePermissions);
 
   // Voice
@@ -65,6 +66,14 @@ export default function WatchPartyTheater() {
     navigate('/party');
   };
 
+  const handleEndParty = async () => {
+    if (!currentRoom) return;
+    if (window.confirm(`Are you sure you want to end and delete "${currentRoom.name}"? All participants will be disconnected.`)) {
+      await deleteRoom(currentRoom.id);
+      navigate('/party');
+    }
+  };
+
   const toggleHostLock = () => {
     if (!isHost) return;
     updatePermissions({
@@ -78,12 +87,19 @@ export default function WatchPartyTheater() {
       {/* ── Top Bar ── */}
       <header className="theater-top-bar">
 
-        {/* Left: Exit + divider + room info */}
+        {/* Left: Exit + End Party (host) + divider + room info */}
         <div className="theater-info-block">
           <button className="btn-back-lobby" onClick={handleLeave}>
             <ArrowLeft size={13} />
-            Exit
+            <span>Exit</span>
           </button>
+
+          {isHost && (
+            <button className="btn-end-party" onClick={handleEndParty} title="End and delete this Watch Party">
+              <Trash2 size={13} />
+              <span className="btn-end-party-text">End Party</span>
+            </button>
+          )}
 
           <div className="theater-top-divider" />
 

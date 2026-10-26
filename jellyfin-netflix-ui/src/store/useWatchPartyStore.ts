@@ -46,6 +46,7 @@ interface WatchPartyState {
   updatePermissions: (permissions: RoomPermissions) => void;
   setBuffering: (buffering: boolean) => void;
   toggleChat: (open?: boolean) => void;
+  deleteRoom: (roomId: string) => Promise<boolean>;
   refreshRooms: () => void;
   setDrift: (driftMs: number) => void;
 
@@ -487,7 +488,9 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
         userId: 'system',
         userName: 'System',
         avatar: '',
-        content: `Connected to "${updatedRoom.name}". Synchronizing with host...`,
+        content: isHost
+          ? `Welcome to "${updatedRoom.name}". You are hosting this party.`
+          : `Connected to "${updatedRoom.name}".`,
         type: 'system',
         timestamp: now
       };
@@ -564,6 +567,36 @@ export const useWatchPartyStore = create<WatchPartyState>((set, get) => {
       });
 
       toast('Left Watch Party', { icon: '👋' });
+    },
+
+    deleteRoom: async (roomId: string) => {
+      try {
+        const { currentRoom, currentUser } = get();
+        await watchPartyService.deleteRoom(roomId);
+
+        if (currentRoom?.id === roomId) {
+          get().leaveRoom();
+        }
+
+        set({
+          activeRooms: watchPartyService.getStoredRooms()
+        });
+
+        watchPartyService.broadcast({
+          roomId,
+          action: 'ROOM_UPDATE',
+          senderId: currentUser.id,
+          senderName: currentUser.name,
+          timestamp: Date.now()
+        });
+
+        toast.success('Watch Party deleted');
+        return true;
+      } catch (err) {
+        console.error('Failed to delete Watch Party:', err);
+        toast.error('Failed to delete Watch Party');
+        return false;
+      }
     },
 
     sendPlay: (currentTime) => {

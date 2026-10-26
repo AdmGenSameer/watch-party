@@ -1759,3 +1759,212 @@ input[type="range"].volume-slider::-webkit-slider-thumb {
   color: var(--wp-text-3);
   letter-spacing: 0.5px;
 }
+
+/* =========================================================
+   ROOM ACTIONS & DELETE BUTTONS
+   ========================================================= */
+
+.room-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-card-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all var(--wp-fast);
+  flex-shrink: 0;
+}
+
+.btn-card-delete:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-end-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fca5a5;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--wp-font);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--wp-fast);
+}
+
+.btn-end-party:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+/* =========================================================
+   MOBILE RESPONSIVENESS (PHONES & SMALL TABLETS)
+   ========================================================= */
+
+@media (max-width: 768px) {
+  /* 1. Lobby Page */
+  .watchparty-lobby-container {
+    padding: 72px 14px 40px;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .lobby-hero {
+    margin: 0 auto 32px;
+    max-width: 100%;
+  }
+
+  .lobby-title {
+    font-size: 1.85rem;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .lobby-subtitle {
+    font-size: 0.88rem;
+    margin-bottom: 22px;
+    padding: 0 8px;
+  }
+
+  .lobby-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .btn-primary-party {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.92rem;
+  }
+
+  .join-code-box {
+    width: 100%;
+    display: flex;
+  }
+
+  .join-code-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rooms-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* 2. Create Modal */
+  .create-party-card {
+    width: 95vw;
+    max-height: 92vh;
+    padding: 18px 14px;
+    margin: auto;
+  }
+
+  .media-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+  }
+
+  .media-card-title {
+    font-size: 0.72rem;
+  }
+
+  /* 3. Theater Container & Stage */
+  .theater-container {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .theater-top-bar {
+    height: 46px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .theater-movie-title {
+    display: none;
+  }
+
+  .theater-room-name {
+    max-width: 110px;
+    font-size: 0.82rem;
+  }
+
+  .theater-members-strip {
+    display: none;
+  }
+
+  .btn-end-party-text {
+    display: none;
+  }
+
+  .theater-top-actions {
+    gap: 4px;
+  }
+
+  .btn-voice-control span {
+    display: none;
+  }
+
+  .btn-voice-control {
+    padding: 6px 8px;
+  }
+
+  .btn-copy-code span {
+    font-size: 0.75rem;
+  }
+
+  /* Mobile Stacked Theater Layout */
+  .theater-main-stage {
+    flex-direction: column !important;
+    overflow: hidden;
+    height: calc(100vh - 46px);
+    height: calc(100dvh - 46px);
+  }
+
+  .theater-main-stage > div:first-child {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    max-height: 40vh;
+  }
+
+  .theater-video-wrapper {
+    width: 100%;
+    height: 100%;
+  }
+
+  .chat-sidebar {
+    width: 100% !important;
+    flex: 1 !important;
+    border-left: none !important;
+    border-top: 1px solid var(--wp-line);
+    min-height: 0;
+  }
+}

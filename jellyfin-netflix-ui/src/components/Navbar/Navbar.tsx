@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Bell, X, Tv } from 'lucide-react';
+import { Search, Bell, X, Tv, Menu, LogOut, ExternalLink, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUIStore } from '../../store/useUIStore';
@@ -11,7 +11,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onLogout }: NavbarProps) {
-  const { serverUrl, token, userId } = useAuthStore();
+  const { serverUrl, token, userId, username } = useAuthStore();
   const setSelectedMovie = useUIStore(state => state.setSelectedMovie);
   
   const [hasMovies, setHasMovies] = useState(false);
@@ -21,7 +21,11 @@ export default function Navbar({ onLogout }: NavbarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const searchRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   // Fetch views to dynamically show Movies/Series links
   useEffect(() => {
@@ -51,16 +55,19 @@ export default function Navbar({ onLogout }: NavbarProps) {
           })
           .catch(console.error);
       }
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchTerm, serverUrl, userId, token]);
 
-  // Close search when clicking outside
+  // Close search & profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -82,11 +89,27 @@ export default function Navbar({ onLogout }: NavbarProps) {
     setSearchTerm('');
   };
 
+  const handleLinkClick = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="spatial-navbar-container">
       <nav className="spatial-pill spatial-glass">
-        <div className="nav-brand">TOKOSHAN</div>
+        {/* Left: Mobile menu toggle + Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button 
+            type="button"
+            className="mobile-menu-toggle" 
+            onClick={() => setMobileMenuOpen(v => !v)}
+            title="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          <div className="nav-brand">TOKOSHAN</div>
+        </div>
         
+        {/* Desktop Nav Links */}
         <div className="nav-links">
           <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Home</NavLink>
           {hasMovies && <NavLink to="/movies" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Movies</NavLink>}
@@ -106,6 +129,7 @@ export default function Navbar({ onLogout }: NavbarProps) {
           </a>
         </div>
         
+        {/* Actions: Search, Notifications, Profile */}
         <div className="nav-actions">
           <div className={`search-container ${searchOpen ? 'open' : ''}`} ref={searchRef}>
             <Search className="nav-icon search-icon" size={20} onClick={() => setSearchOpen(true)} />
@@ -141,15 +165,93 @@ export default function Navbar({ onLogout }: NavbarProps) {
           </div>
 
           <Bell className="nav-icon" size={20} />
-          <button className="nav-profile-btn" onClick={onLogout} title="Logout">
-            <img 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop" 
-              alt="Profile" 
-              className="nav-avatar"
-            />
-          </button>
+
+          {/* Profile Dropdown Container */}
+          <div className="profile-dropdown-container" ref={profileRef}>
+            <button 
+              type="button"
+              className={`nav-profile-btn ${profileOpen ? 'active' : ''}`} 
+              onClick={() => setProfileOpen(v => !v)} 
+              title="User Account"
+            >
+              <img 
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop" 
+                alt="Profile" 
+                className="nav-avatar"
+              />
+            </button>
+
+            {profileOpen && (
+              <div className="profile-menu-dropdown spatial-glass">
+                <div className="profile-menu-header">
+                  <div className="profile-menu-avatar">
+                    <User size={20} color="#fff" />
+                  </div>
+                  <div className="profile-menu-details">
+                    <div className="profile-menu-username">{username || 'Jellyfin User'}</div>
+                    <div className="profile-menu-server" title={serverUrl}>
+                      {serverUrl ? serverUrl.replace(/^https?:\/\//, '') : 'Connected'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="profile-menu-divider" />
+
+                <a 
+                  href="/web/index.html" 
+                  target="_top" 
+                  className="profile-menu-item"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  <Tv size={16} />
+                  <span>Exit to Jellyfin Web</span>
+                  <ExternalLink size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                </a>
+
+                <NavLink 
+                  to="/party" 
+                  className="profile-menu-item"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  <Tv size={16} />
+                  <span>Watch Party Lobby</span>
+                </NavLink>
+
+                <div className="profile-menu-divider" />
+
+                <button 
+                  type="button"
+                  className="profile-menu-item profile-logout-action"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    if (onLogout) onLogout();
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer spatial-glass">
+          <div className="mobile-nav-links">
+            <NavLink to="/" className="mobile-nav-link" onClick={handleLinkClick}>Home</NavLink>
+            {hasMovies && <NavLink to="/movies" className="mobile-nav-link" onClick={handleLinkClick}>Movies</NavLink>}
+            {hasSeries && <NavLink to="/series" className="mobile-nav-link" onClick={handleLinkClick}>Series</NavLink>}
+            <NavLink to="/universe" className="mobile-nav-link" onClick={handleLinkClick}>My Universe</NavLink>
+            <NavLink to="/party" className="mobile-nav-link highlight" onClick={handleLinkClick}>Watch Party</NavLink>
+            <a href="/web/index.html" target="_top" className="mobile-nav-link" onClick={handleLinkClick}>
+              <Tv size={16} />
+              <span>Jellyfin Web</span>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

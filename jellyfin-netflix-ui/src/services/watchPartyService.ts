@@ -368,6 +368,16 @@ class WatchPartyService {
     try {
       const rooms = this.getStoredRooms().filter(r => r.id !== roomId);
       localStorage.setItem(LOCAL_STORAGE_ROOMS_KEY, JSON.stringify(rooms));
+
+      // Also notify backend API if authenticated
+      if (this.serverUrl && this.token) {
+        fetch(`${this.serverUrl}/api/watchparty/rooms/${roomId}`, {
+          method: 'DELETE',
+          headers: {
+            'X-Emby-Token': this.token
+          }
+        }).catch(() => {});
+      }
     } catch {
       // ignore
     }

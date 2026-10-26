@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Tv, Film, Sparkles, Users, X, ArrowRight, Play, Search, Check, Loader2, AlertCircle } from 'lucide-react';
+import { Tv, Film, Sparkles, Users, X, ArrowRight, Play, Search, Check, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWatchPartyStore } from '../../store/useWatchPartyStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -15,6 +15,7 @@ export default function WatchPartyLobby() {
   const activeRooms = useWatchPartyStore(state => state.activeRooms);
   const createRoom = useWatchPartyStore(state => state.createRoom);
   const joinRoom = useWatchPartyStore(state => state.joinRoom);
+  const deleteRoom = useWatchPartyStore(state => state.deleteRoom);
   const currentUser = useWatchPartyStore(state => state.currentUser);
 
   const { serverUrl, userId, token } = useAuthStore();
@@ -264,6 +265,13 @@ export default function WatchPartyLobby() {
     }
   };
 
+  const handleDeleteRoom = async (e: React.MouseEvent, roomId: string, roomName: string) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete "${roomName}"?`)) {
+      await deleteRoom(roomId);
+    }
+  };
+
   return (
     <div className="watchparty-lobby-container">
       {/* Hero Section */}
@@ -348,12 +356,21 @@ export default function WatchPartyLobby() {
                       </span>
                     </div>
 
-                    <button
-                      className="btn-card-join"
-                      onClick={() => handleJoinExistingRoom(room.id)}
-                    >
-                      Join Room
-                    </button>
+                    <div className="room-card-actions">
+                      <button
+                        className="btn-card-delete"
+                        onClick={(e) => handleDeleteRoom(e, room.id, room.name)}
+                        title="Delete Watch Party"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                      <button
+                        className="btn-card-join"
+                        onClick={() => handleJoinExistingRoom(room.id)}
+                      >
+                        Join Room
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
